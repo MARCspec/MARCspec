@@ -25,7 +25,7 @@ A **MARC spec** is a reference to the content data in a MARC record defined thro
 
 ## Expressing MARC specs as string
 
-A MARC spec as string might not fullfil all requirements of definition for a reference to the desired set of data. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARC spec has to concentrate on the basic references and let all other data processing to subsequent data processing funtions. Other MARC spec definitions like used in [marcspec] and [solrmarc] might be more expressive on the level of data processing.
+A MARC spec as string might not fullfil all requirements of definition for a reference to the desired set of data. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARC spec has to concentrate on the basic references and let all other data processing to subsequent data processing functions. Other MARC spec definitions like used in [marcspec] and [solrmarc] might be more expressive on the level of data processing.
 
 ### Basic references
 
@@ -42,7 +42,7 @@ References a MARC spec as string does not cope
 
 ### Form of MARC spec as string
 
-The form of the MARC spec as string is defined by the [RFC 2234] (Augmented BNF for Syntax Specifications: ABNF).
+The [Augmented BNF for Syntax Specifications: ABNF](The form of the MARC spec as string is defined by) is used to define the form of the MARC spec as string.
 
 A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character "~" or followed by zero to n subfield tags optionally followed by the indicators prefix with the character "_".
 
