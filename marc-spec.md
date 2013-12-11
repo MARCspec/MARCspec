@@ -8,9 +8,15 @@ Linked Data is designed to encode the information for exchange in a [Uniform Res
 
 The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/cklee/marc-spec/issues) is welcome!
 
+**Version**
+
+{VERSION}
+
 **Revision history**
 
 {GIT_CHANGES}
+
+
 
 ## Terminology
 
