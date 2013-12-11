@@ -50,7 +50,7 @@ References a MARC spec as string does not cope
 
 The [Augmented BNF for Syntax Specifications: ABNF](The form of the MARC spec as string is defined by) is used to define the form of the MARC spec as string.
 
-A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character "~" or followed by zero to n subfield tags optionally followed by the indicators prefix with the character "_".
+A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character "~" or followed by zero to n subfield tags optionally followed by the indicators prefix with the character "\_".
 
 ```
 marcspec = (fieldTag ["~" characterPositionOrRange] / fieldTag subfieldTags ["_" indicators])
@@ -74,7 +74,7 @@ Subfield tags consits of one to n characters.
 subfieldTags = *CHAR
 ```
 
-Indicators consits of indicator 1 and indicator 2. Both are optional. If indicator 1 is not specified is must be replaced by the character "_". If indicator 2 is not specified it might be replaced by the character "_" or left blank.
+Indicators consits of indicator 1 and indicator 2. Both are optional. If indicator 1 is not specified is must be replaced by the character "\_". If indicator 2 is not specified it might be replaced by the character "\_" or left blank.
 
 ```
 indicators = (indicator1 / "_") ([indicator2] / "_")
