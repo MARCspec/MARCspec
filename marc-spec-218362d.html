@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Carsten Klee (ZDB)" />
+  <meta name="date" content="2013-12-11" />
+  <title></title>
+   <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style type="text/css">
+  body { font-family: sans-serif; }
+  a { text-decoration: none }
+  a:hover { text-decoration: underline }
+  h1 { font: 170% sans-serif }
+  h1.title { font-size: 200%; font-weight: bold; }
+  h2 { font: 140% sans-serif }
+  h3 { font: 120% sans-serif }
+  dt { font-weight: bold; }
+  h1, h2, h3, h1 a, h2 a, h3 a { color: #005A9C; }
+  table { border-collapse: collapse; }
+  td { border: 1px solid #999; padding: 3px }
+  dl p { margin-top: 0; }
+  dt { margin-top: 0.8em; }
+  dd { margin-left: 1.5em; }
+  ol { margin-bottom: 1em; }
+  table + p { margin-top: 1em; }
+  </style>
+</head>
+<body>
+<a href="https://github.com/cKlee/marc-spec.git"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+
+<h1>Table of Contents</h1>
+<nav id="TOC">
+<ul>
+<li><a href="#marc-spec-as-string"><span class="toc-section-number">1</span> MARC spec as string</a><ul>
+<li><a href="#status-of-this-document"><span class="toc-section-number">1.1</span> Status of this document</a></li>
+<li><a href="#terminology"><span class="toc-section-number">1.2</span> Terminology</a></li>
+<li><a href="#what-is-a-marc-spec"><span class="toc-section-number">1.3</span> What is a MARC spec?</a></li>
+<li><a href="#expressing-marc-specs-as-string"><span class="toc-section-number">1.4</span> Expressing MARC specs as string</a><ul>
+<li><a href="#basic-references"><span class="toc-section-number">1.4.1</span> Basic references</a></li>
+<li><a href="#form-of-marc-spec-as-string"><span class="toc-section-number">1.4.2</span> Form of MARC spec as string</a></li>
+</ul></li>
+<li><a href="#examples"><span class="toc-section-number">1.5</span> Examples</a><ul>
+<li><a href="#reference-to-data-in-the-leader-and-control-fields-plus-character-position-and-range"><span class="toc-section-number">1.5.1</span> Reference to data in the leader and control fields plus character position and range</a></li>
+<li><a href="#reference-to-data-in-subfields-of-data-fields"><span class="toc-section-number">1.5.2</span> Reference to data in subfields of data fields</a></li>
+<li><a href="#reference-to-data-in-subfields-of-data-fields-within-the-context-of-indicators"><span class="toc-section-number">1.5.3</span> Reference to data in subfields of data fields within the context of indicators</a></li>
+</ul></li>
+<li><a href="#marc-spec-as-string-interpretation"><span class="toc-section-number">1.6</span> MARC spec as string interpretation</a></li>
+<li><a href="#normative-references"><span class="toc-section-number">1.7</span> Normative references</a></li>
+<li><a href="#informative-references"><span class="toc-section-number">1.8</span> Informative references</a></li>
+</ul></li>
+</ul>
+</nav>
+<section id="marc-spec-as-string" class="level1">
+<h1><a href="#marc-spec-as-string"><span class="header-section-number">1</span> MARC spec as string</a></h1>
+<p>Along with the shift to <a href="http://www.w3.org/DesignIssues/LinkedData.html">Linked Data</a> it becomes a common task to map <a href="http://www.loc.gov/marc/">MARC 21</a> data to <a href="http://www.w3.org/TR/rdf-primer/">RDF</a>. Mappings for MARC 21 are normally based on a set of definitions of MARC fields and subfields called <em>MARC spec</em>.</p>
+<p>Linked Data is designed to encode the information for exchange in a <a href="http://www.ietf.org/rfc/rfc3986.txt">Uniform Resource Identifier (URI)</a>. Encoding MARC specs within URIs enables the exchange of MARC mappings on a global level. But the transport of MARC specs via URIs makes it necessary to encode the spec as a string. This document is a proposal for encoding of MARC spec as string.</p>
+<section id="status-of-this-document" class="level2">
+<a id="Status of this document"></a><h2><a href="#status-of-this-document"><span class="header-section-number">1.1</span> Status of this document</a></h2>
+<p>The current version of this proposal is a preliminary draft for open discussion. <a href="https://github.com/cklee/marc-spec/issues">Feedback</a> is welcome!</p>
+<p><strong>Version</strong></p>
+<p>rev5</p>
+<p><strong>Revision history</strong></p>
+<ul>
+<li><a href="marc-spec-d297e91.html"><code>2013-12-11 14:13:59 +0100</code></a>: <a href="https://github.com/cKlee/marc-spec.gitcommit/d297e9190a4a010a3bef479e887fdaf991d7aa45">with makefile</a></li>
+<li><a href="marc-spec-6911119.html"><code>2013-12-11 13:57:14 +0100</code></a>: <a href="https://github.com/cKlee/marc-spec.gitcommit/691111903289e7bc3cd3d4a5cb28f030ed646691">minor: typos and links</a></li>
+<li><a href="marc-spec-029f0b7.html"><code>2013-12-11 13:49:01 +0100</code></a>: <a href="https://github.com/cKlee/marc-spec.gitcommit/029f0b7da1a45895c60411772317f205665de5ff">initial commit</a></li>
+</ul>
+</section>
+<section id="terminology" class="level2">
+<a id="Terminology"></a><h2><a href="#terminology"><span class="header-section-number">1.2</span> Terminology</a></h2>
+<p>The keywords “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this document are to be interpreted as described in <a href="http://www.ietf.org/rfc/rfc2119.txt">RFC 2119</a>.</p>
+</section>
+<section id="what-is-a-marc-spec" class="level2">
+<a id="What is a MARC spec?"></a><h2><a href="#what-is-a-marc-spec"><span class="header-section-number">1.3</span> What is a MARC spec?</a></h2>
+<p>Machine-Readable Cataloging (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consits of fields, subfields and its contents. There are three kinds of MARC fields: the Leader, the control field and data field. The data in the Leader and in the control fields can be accessed through its character position or character position range. Only data fields are divided into subfields. Subfields can also be contextualized through indicators. There is an indicator 1 and an indicator 2 for all datafields, both are optional. See <a href="http://www.loc.gov/marc/96principl.html">MARC 21 Principles</a> for a deeper explanation of the MARC 21 format.</p>
+<p>A <strong>MARC spec</strong> is a reference to the content data in a MARC record defined through the fields, character positions, subfields and indicators. The content of the MARC record beeing referenced may be represented through a set of data, having zero to n data elements.</p>
+</section>
+<section id="expressing-marc-specs-as-string" class="level2">
+<a id="Expressing MARC specs as string"></a><h2><a href="#expressing-marc-specs-as-string"><span class="header-section-number">1.4</span> Expressing MARC specs as string</a></h2>
+<p>A MARC spec as string might not fullfil all requirements of definition for a reference to the desired set of data. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARC spec has to concentrate on the basic references and let all other data processing to subsequent data processing functions. Other MARC spec definitions like used in <a href="https://github.com/billdueber/marcspec">marcspec</a> and <a href="https://code.google.com/p/solrmarc/">solrmarc</a> might be more expressive on the level of data processing.</p>
+<section id="basic-references" class="level3">
+<h3><a href="#basic-references"><span class="header-section-number">1.4.1</span> Basic references</a></h3>
+<p>A MARC spec as string should cope the following basic references:</p>
+<ul>
+<li>Reference to data in the leader and control fields plus character position and range</li>
+<li>Reference to data in subfields of data fields</li>
+<li>Reference to data in subfields of data fields within the context of indicators</li>
+</ul>
+<p>References a MARC spec as string does not cope</p>
+<ul>
+<li>Reference to data through a field list</li>
+<li>Reference to data in subfields internally structured through delimiters or key characters</li>
+</ul>
+</section>
+<section id="form-of-marc-spec-as-string" class="level3">
+<h3><a href="#form-of-marc-spec-as-string"><span class="header-section-number">1.4.2</span> Form of MARC spec as string</a></h3>
+<p>The <a href="The%20form%20of%20the%20MARC%20spec%20as%20string%20is%20defined%20by">Augmented BNF for Syntax Specifications: ABNF</a> is used to define the form of the MARC spec as string.</p>
+<p>A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character “~” or followed by zero to n subfield tags optionally followed by the indicators prefix with the character “_”.</p>
+<pre><code>marcspec = (fieldTag [&quot;~&quot; characterPositionOrRange] / fieldTag subfieldTags [&quot;_&quot; indicators])</code></pre>
+<p>A field tag consits of three characters. Within MARC 21 there are only digits allowed (except for the Leader wich is “LDR”), but using the character “X” instead of a digit this must be interpreted as a wildcard. E.g. 2XX is then a reference to the data in all fields beginning with 2.</p>
+<pre><code>fieldTag = [3*3(DIGIT / &quot;X&quot;) / &quot;LDR&quot;]</code></pre>
+<p>A character position or range consits of one to n digits represententing the character position optionally followed by one to n digits prefixed with the character “-” representing the character range.</p>
+<pre><code>characterPositionOrRange = *DIGIT [&quot;-&quot; *DIGIT]</code></pre>
+<p>Subfield tags consits of one to n characters.</p>
+<pre><code>subfieldTags = *CHAR</code></pre>
+<p>Indicators consits of indicator 1 and indicator 2. Both are optional. If indicator 1 is not specified is must be replaced by the character “<em>“. If indicator 2 is not specified it might be replaced by the character”</em>” or left blank.</p>
+<pre><code>indicators = (indicator1 / &quot;_&quot;) ([indicator2] / &quot;_&quot;)</code></pre>
+<p>Both indicators 1 and 2 consits of one character or one digit if present.</p>
+<pre><code>indicator1 = indicator
+indicator2 = indicator
+indicator = 1*1(CHAR / DIGIT)</code></pre>
+</section>
+</section>
+<section id="examples" class="level2">
+<a id="Examples"></a><h2><a href="#examples"><span class="header-section-number">1.5</span> Examples</a></h2>
+<section id="reference-to-data-in-the-leader-and-control-fields-plus-character-position-and-range" class="level3">
+<h3><a href="#reference-to-data-in-the-leader-and-control-fields-plus-character-position-and-range"><span class="header-section-number">1.5.1</span> Reference to data in the leader and control fields plus character position and range</a></h3>
+<p>Reference to data in the Leader from character position 0 to character position 4 (5 characters).</p>
+<pre><code>LDR~0-4</code></pre>
+<p>Reference to data in the Leader at character position 6 (1 character).</p>
+<pre><code>LDR~6</code></pre>
+<p>Reference to data in the control field 007 (see <a href="#interpretation">MARC spec as string interpretation</a> for further explanation) at character position 0 (1 character).</p>
+<pre><code>007~0</code></pre>
+</section>
+<section id="reference-to-data-in-subfields-of-data-fields" class="level3">
+<h3><a href="#reference-to-data-in-subfields-of-data-fields"><span class="header-section-number">1.5.2</span> Reference to data in subfields of data fields</a></h3>
+<p>Reference to data in the subfield “a” of field “245”.</p>
+<pre><code>245a</code></pre>
+<p>Reference to data in the subfields “a”, “b” and “c” of field “245”.</p>
+<pre><code>245abc</code></pre>
+<p>Reference to data in the subfield “a” of all fields beginning with “24”.</p>
+<pre><code>24Xa</code></pre>
+<p>Reference to data in the subfield “a” of all fields beginning with “2” and ending with “5”.</p>
+<pre><code>2X5a</code></pre>
+<p>Reference to data in the subfield “a” of all fields beginning with “2”.</p>
+<pre><code>2XXa</code></pre>
+</section>
+<section id="reference-to-data-in-subfields-of-data-fields-within-the-context-of-indicators" class="level3">
+<h3><a href="#reference-to-data-in-subfields-of-data-fields-within-the-context-of-indicators"><span class="header-section-number">1.5.3</span> Reference to data in subfields of data fields within the context of indicators</a></h3>
+<p>Reference to data in the subfield “a” within the context of indicator 1 with the value 1.</p>
+<pre><code>245a_1
+
+or
+
+245a_1_</code></pre>
+<p>Reference to data in the subfield “a” within the context of indicator 1 with the value 1 and indicator 2 with the value 0.</p>
+<pre><code>245a_10</code></pre>
+<p>Reference to data in the subfield “a” within the context of indicator 2 with the value 0.</p>
+<pre><code>245a__0</code></pre>
+</section>
+</section>
+<section id="marc-spec-as-string-interpretation" class="level2">
+<a id="MARC spec as string interpretation"></a><h2><a href="#marc-spec-as-string-interpretation"><span class="header-section-number">1.6</span> MARC spec as string interpretation</a></h2>
+<p>Because of the limited expressivity of the MARC spec as string there must be some kind of implicit interpretation. Therefor this section is normative.</p>
+<p>For repeatable fields the field tag MUST be interpreted as a reference to the data in all repetitions.</p>
+<p>For the character position or range the digit “0” is always a reference to the first character in the Leader or control field.</p>
+<p>Subfield tags may occour in in non ordered sequence.</p>
+</section>
+<section id="normative-references" class="level2">
+<a id="Normative references"></a><h2><a href="#normative-references"><span class="header-section-number">1.7</span> Normative references</a></h2>
+<ul>
+<li><a href="http://www.ietf.org/rfc/rfc2119.txt">RFC 2119</a></li>
+<li><a href="https://www.ietf.org/rfc/rfc2234.txt">RFC 2234</a></li>
+</ul>
+</section>
+<section id="informative-references" class="level2">
+<a id="Informative references"></a><h2><a href="#informative-references"><span class="header-section-number">1.8</span> Informative references</a></h2>
+<ul>
+<li><a href="http://www.loc.gov/marc/">MARC 21</a></li>
+<li><a href="http://www.w3.org/TR/rdf-primer/">RDF</a></li>
+<li><a href="http://www.w3.org/DesignIssues/LinkedData.html">Linked Data</a></li>
+<li><a href="http://www.ietf.org/rfc/rfc3986.txt">Uniform Resource Identifier (URI)</a></li>
+<li><a href="http://www.loc.gov/marc/96principl.html">MARC 21 Principles</a></li>
+<li><a href="https://github.com/billdueber/marcspec">marcspec</a></li>
+<li><a href="https://code.google.com/p/solrmarc/">solrmarc</a></li>
+</ul>
+</section>
+</section>
+</body>
+</html>
