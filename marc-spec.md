@@ -85,7 +85,7 @@ indicators = (indicator1 / "_") ([indicator2] / "_")
 If present both indicator 1 and indicator 2 consits of one lowercase alphabetic or numeric character.
 
 ```
-indicator = 1*1(alphalower/ DIGIT)
+indicator = 1*1(alphalower / DIGIT)
 indicator1 = indicator
 indicator2 = indicator
 ```
