@@ -68,10 +68,11 @@ A character position or range consits of one to n digits represententing the cha
 characterPositionOrRange = *DIGIT ["-" *DIGIT]
 ```
 
-Subfield tags consits of one to n characters.
+Subfield tags consits of one to n lowercase alphabetic or numeric character.
 
 ```
-subfieldTags = *CHAR
+ALPHALOWER = %x61-7A   ; a-z
+subfieldTags = 1*(ALPHALOWER / DIGIT)
 ```
 
 Indicators consits of indicator 1 and indicator 2. Both are optional. If indicator 1 is not specified is must be replaced by the character "\_". If indicator 2 is not specified it might be replaced by the character "\_" or left blank.
@@ -80,12 +81,12 @@ Indicators consits of indicator 1 and indicator 2. Both are optional. If indicat
 indicators = (indicator1 / "_") ([indicator2] / "_")
 ```
 
-Both indicators 1 and 2 consits of one character or one digit if present.
+If present both indicator 1 and indicator 2 consits of one lowercase alphabetic or numeric character.
 
 ```
+indicator = 1*1(ALPHALOWER / DIGIT)
 indicator1 = indicator
 indicator2 = indicator
-indicator = 1*1(CHAR / DIGIT)
 ```
 
 ## Examples
