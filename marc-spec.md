@@ -38,7 +38,7 @@ A MARC spec as string might not fullfil all requirements of definition for a ref
 A MARC spec as string should cope the following basic references:
 
 * Reference to data in the leader and control fields plus character position and range
-* Reference to data in subfields of data fields
+* Reference to data in data fields or subfields
 * Reference to data in subfields of data fields within the context of indicators
 
 References a MARC spec as string does not cope
@@ -48,7 +48,7 @@ References a MARC spec as string does not cope
 
 ### Form of MARC spec as string
 
-The [Augmented BNF for Syntax Specifications: ABNF](The form of the MARC spec as string is defined by) is used to define the form of the MARC spec as string.
+The **Augmented BNF for Syntax Specifications: ABNF** [RFC 2234] is used to define the form of the MARC spec as string.
 
 A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character "~" or followed by zero to n subfield tags optionally followed by the indicators prefix with the character "\_".
 
@@ -92,6 +92,12 @@ indicator = 1*1(CHAR / DIGIT)
 
 ### Reference to data in the leader and control fields plus character position and range
 
+Reference to all data in the Leader.
+
+```
+LDR
+```
+
 Reference to data in the Leader from character position 0 to character position 4 (5 characters).
 
 ```
@@ -110,7 +116,13 @@ Reference to data in the control field 007 (see [MARC spec as string interpretat
 007~0
 ```
 
-### Reference to data in subfields of data fields
+### Reference to data in data fields or subfields
+
+Reference to all content data in the field "245".
+
+```
+245
+```
 
 Reference to data in the subfield "a" of field "245".
 
@@ -171,6 +183,8 @@ Reference to data in the subfield "a" within the context of indicator 2 with the
 [MARC spec as string interpretation]: #interpretation
 
 Because of the limited expressivity of the MARC spec as string there must be some kind of implicit interpretation. Therefor this section is normative.
+
+A Marc spec with only the field tag is a reference to all content data in the field. That does NOT include the subfield tags.
 
 For repeatable fields the field tag MUST be interpreted as a reference to the data in all repetitions.
 
