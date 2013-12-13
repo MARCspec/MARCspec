@@ -53,7 +53,7 @@ The **Augmented BNF for Syntax Specifications: ABNF** [RFC 2234] is used to defi
 A MARC spec as string consits of a field tag optionally followed by a character position or range prefixed with the character "~" or followed by zero to n subfield tags optionally followed by the indicators prefix with the character "\_".
 
 ```
-marcspec = (fieldTag ["~" characterPositionOrRange] / fieldTag subfieldTags ["_" indicators])
+marcspec = fieldTag (["~" characterPositionOrRange] / [subfieldTags] ["_" indicators])
 ```
 
 A field tag consits of three characters. Within MARC 21 there are only digits allowed (except for the Leader wich is "LDR"), but using the character "X" instead of a digit this must be interpreted as a wildcard. E.g. 2XX is then a reference to the data in all fields beginning with 2.
