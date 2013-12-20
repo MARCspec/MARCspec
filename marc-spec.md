@@ -59,7 +59,7 @@ marcspec = fieldTag (["~" characterPositionOrRange] / [subfieldTags] ["_" indica
 A field tag consits of three characters. Within MARC 21 there are only digits allowed (except for the Leader wich is "LDR"), but using the character "X" instead of a digit this must be interpreted as a wildcard. E.g. 2XX is then a reference to the data in all fields beginning with 2.
 
 ```
-fieldTag = [3*3(DIGIT / "X") / "LDR"]
+fieldTag = 3*3(DIGIT / "X") / "LDR"
 ```
 
 A character position or range consits of one to n digits represententing the character position optionally followed by one to n digits prefixed with the character "-" representing the character range.
@@ -79,13 +79,13 @@ subfieldTags = 1*(alphalower / DIGIT / specialCharacter)
 Indicators consits of indicator 1 and indicator 2. Both are optional. If indicator 1 is not specified is must be replaced by the character "\_". If indicator 2 is not specified it might be replaced by the character "\_" or left blank.
 
 ```
-indicators = (indicator1 / "_") ([indicator2] / "_")
+indicators = (indicator1 / "_") [ indicator2 / "_" ]
 ```
 
 If present both indicator 1 and indicator 2 consits of one lowercase alphabetic or numeric character.
 
 ```
-indicator = 1*1(alphalower / DIGIT)
+indicator  = 1*1(alphalower / DIGIT)
 indicator1 = indicator
 indicator2 = indicator
 ```
