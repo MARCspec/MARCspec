@@ -136,6 +136,12 @@ Reference to data in the control field 007 (see [MARCspec as string interpretati
 007~0
 ```
 
+Reference to all control fields.
+
+```
+00X
+```
+
 ### Reference to data in data fields or subfields
 
 Reference to all content data in the field "245".
@@ -203,6 +209,7 @@ Reference to data in the subfield "a" within the context of indicator 2 with the
 
 * [RFC 2119]
 * [RFC 2234]
+* [ISO 2709]
 
 ## Informative references
 
@@ -227,3 +234,4 @@ Reference to data in the subfield "a" within the context of indicator 2 with the
 [RFC 2119]: http://www.ietf.org/rfc/rfc2119.txt
 [RFC 2234]: https://www.ietf.org/rfc/rfc2234.txt
 [catmandu]: http://librecat.org/
+[ISO 2709]: http://en.wikipedia.org/wiki/ISO_2709
