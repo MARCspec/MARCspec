@@ -4,24 +4,15 @@ Along with the shift to [Linked Data] it becomes a common task to map [MARC 21] 
 
 Linked Data is designed to encode the information for exchange in a [Uniform Resource Identifier (URI)]. Encoding MARCspecs within URIs enables the exchange of MARC mappings on a global level. But the transport of MARCspecs via URIs makes it necessary to encode the spec as a string. This document is a proposal for encoding of MARCspec as string.
 
+There are already implementations of MARC field specifications in tools like [marcspec], [catmandu], [solrmarc] and [easyM2R]. MARCspec can help to build reusable MARCspec parsers and validators.
+
 ## Status of this document
 
 The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/cklee/marc-spec/issues) is welcome!
 
-**Version**
-
-{VERSION}
-
-**Revision history**
-
-{GIT_CHANGES}
-
-
-
 ## Terminology
 
 The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119].
-
 
 ## What is a MARCspec?
 
@@ -31,7 +22,7 @@ A **MARCspec** is a reference to the content data in a MARC record defined throu
 
 ## Expressing MARCspecs as string
 
-A MARCspec as string might not fulfil all requirements of definition for a reference to the desired set of data. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions. Other MARCspec definitions like used in [marcspec], [catmandu] and [solrmarc] might be more expressive on the level of data processing.
+A MARCspec as string might not fulfil all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools implemented MARCspec.
 
 ### Basic references
 
@@ -222,6 +213,9 @@ Reference to data in the subfield "a" within the context of indicator 2 with the
 * [solrmarc]
 * [catmandu]
 
+## Revision history
+
+{GIT_CHANGES}
 
 
 [MARC 21]: http://www.loc.gov/marc/
@@ -235,3 +229,4 @@ Reference to data in the subfield "a" within the context of indicator 2 with the
 [RFC 2234]: https://www.ietf.org/rfc/rfc2234.txt
 [catmandu]: http://librecat.org/
 [ISO 2709]: http://en.wikipedia.org/wiki/ISO_2709
+[easyM2R]: https://github.com/cKlee/easyM2R
