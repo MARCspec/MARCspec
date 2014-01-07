@@ -108,7 +108,7 @@ Because of the limited expressivity of the MARCspec as string there must be some
 
 ## Definition of MARC related terms used in this spec
 
-[Definition of MARC related terms used in this spec]: #terms
+[Definition of MARC related terms used in this spec]: #definition-of-marc-related-terms-used-in-this-spec
 
 MARCspec does not redefine terms already used by the [Network Development and MARC Standards Office]. MARCspec lists the definition of core terms taken from the [RECORD STRUCTURE] document and adds some for clarification purposes.
 
