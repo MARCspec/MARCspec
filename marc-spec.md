@@ -104,6 +104,8 @@ Because of the limited expressivity of the MARCspec as string there must be some
 
 * For the character position or range the digit "0" is always a reference to the first character in the *leader* or *control field*.
 
+* Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+
 ## Definition of MARC related terms used in this spec
 
 [Definition of MARC related terms used in this spec]: #terms
@@ -258,37 +260,37 @@ Reference to all control fields.
 
 ### Reference to data in data fields or subfields
 
-Reference to all content data in the field "245".
+Reference to the *field content* in the field "245".
 
 ```
 245
 ```
 
-Reference to data in the subfield "a" of field "245".
+Reference to *data content* in the subfield "a" of field "245".
 
 ```
 245a
 ```
 
-Reference to data in the subfields "a", "b" and "c" of field "245".
+Reference to *data content* in the subfields "a", "b" and "c" of field "245".
 
 ```
 245abc
 ```
 
-Reference to data in the subfield "a" of all fields beginning with "24".
+Reference to *data content* in the subfield "a" of all fields beginning with "24".
 
 ```
 24Xa
 ```
 
-Reference to data in the subfield "a" of all fields beginning with "2" and ending with "5".
+Reference to *data content* in the subfield "a" of all fields beginning with "2" and ending with "5".
 
 ```
 2X5a
 ```
 
-Reference to data in the subfield "a" of all fields beginning with "2".
+Reference to *data content* in the subfield "a" of all fields beginning with "2".
 
 ```
 2XXa
@@ -296,7 +298,7 @@ Reference to data in the subfield "a" of all fields beginning with "2".
 
 ### Reference to data in subfields of data fields within the context of indicators
 
-Reference to data in the subfield "a" within the context of indicator 1 with the value 1.
+Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value *1*.
 
 ```
 245a_1
@@ -306,13 +308,13 @@ or
 245a_1_
 ```
 
-Reference to data in the subfield "a" within the context of indicator 1 with the value 1 and indicator 2 with the value 0.
+Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value *1* and *indicator 2* with the value *0*.
 
 ```
 245a_10
 ```
 
-Reference to data in the subfield "a" within the context of indicator 2 with the value 0.
+Reference to *data content* in the subfield "a" within the context of *indicator 2* with the value *0*.
 
 ```
 245a__0
