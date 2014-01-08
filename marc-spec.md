@@ -130,7 +130,7 @@ A *variable field* containing information useful or required for the processing 
 
 **data content**
 
-A *data element* in a *data field* excluding *subfield codes* and *indicators*.
+The value of a *data element* in a *data field*.
 
 **data element**
 
