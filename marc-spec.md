@@ -130,7 +130,7 @@ A *variable field* containing information useful or required for the processing 
 
 **data content**
 
-The value of a *data element* in a *data field*.
+see *data element value*
 
 **data element**
 
@@ -139,6 +139,10 @@ A defined unit of information.
 **data element identifier**
 
 A one-character code used to identify individual *data elements* within a *variable field*. The *data element* may be any ASCII lowercase alphabetic, numeric, or graphic symbol except blank.
+
+**data element value**
+
+The value of a *data element* in a *data field*.
 
 **data field**
 
