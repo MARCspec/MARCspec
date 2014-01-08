@@ -1,6 +1,6 @@
 # MARCspec as string
 
-Along with the shift to [Linked Data] it becomes a common task to map [MARC 21] data to [RDF]. Mappings for MARC 21 are normally based on a set of definitions of MARC fields and subfields called *MARC spec*.
+Along with the shift to [Linked Data] it becomes a common task to map [MARC 21] data to [RDF]. Mappings for MARC 21 are normally based on a set of definitions of MARC fields and subfields called *MARC field specification or short *MARCspec*.
 
 Linked Data is designed to encode the information for exchange in a [Uniform Resource Identifier (URI)]. Encoding MARCspecs within URIs enables the exchange of MARC mappings on a global level. But the transport of MARCspecs via URIs makes it necessary to encode the spec as a string. This document is a proposal for encoding of MARCspec as string.
 
@@ -18,7 +18,7 @@ See also [Definition of MARC related terms used in this spec].
 
 ## What is a MARCspec?
 
-Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of fields, subfields and its contents. There are three kinds of MARC fields: the *leader*, the control field and data field. The data content in the *leader* and in the control fields can be accessed through its character position or character position range. Only data fields are divided into subfields. Subfields can also be contextualized through indicators. There is an indicator 1 and an indicator 2 for all data fields, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
+Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of fields, subfields and its contents. There are three kinds of MARC fields: the *leader*, the *control field* and *data field*. The *data content* in the *leader* and in the *control fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
 
 A **MARCspec** is a reference to the content data in a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*. The *data elements* of the MARC record being referenced may be represented through a *set of data*, having zero to n *data elements*. Neither MARCspec defines the form of this *set of data*, nor the encoding of the referenced *data content*.  
 
@@ -48,16 +48,16 @@ References a MARCspec as string does not cope
 
 The **Augmented BNF for Syntax Specifications: ABNF** [RFC 2234] is used to define the form of the MARCspec as string.
 
-A MARCspec as string consists of a *field tag* optionally followed by a character position or range prefixed with the character "~" or followed by zero to n *subfield tags* optionally followed by the *indicators* prefixed with the character "\_".
+A MARCspec as string consists of a *field tag* optionally followed by a character position or range prefixed with the character "/" or followed by zero to n *subfield tags* optionally followed by the *indicators* prefixed with the character "\_".
 
 ```
-marcspec = fieldTag (["~" characterPositionOrRange] / [subfieldTags] ["_" indicators])
+marcspec = fieldTag (["/" characterPositionOrRange] / [subfieldTags] ["_" indicators])
 ```
 
-A *field tag* consists of three characters. Within MARC 21 there are only digits allowed (except for the *leader* which is "LDR"), but using the character "X" instead of a digit this must be interpreted as a wildcard. E.g. 2XX is then a reference to the *data elements* in all *fields* beginning with *2*.
+A *field tag* consists of three characters. Within MARC 21 there are only digits allowed (except for the *leader* which is "LDR"), but using the character "." instead of a digit this must be interpreted as a wildcard. E.g. *2..* is then a reference to the *data elements* in all *fields* beginning with *2*.
 
 ```
-fieldTag = 3*3(DIGIT / "X") / "LDR"
+fieldTag = 3*3(DIGIT / ".") / "LDR"
 ```
 
 A *character position or range* consists of one to n digits representing the character position optionally followed by one to n digits prefixed with the character "-" representing the character range.
@@ -241,25 +241,25 @@ LDR
 Reference to data in the *leader* from character position 0 to character position 4 (5 characters).
 
 ```
-LDR~0-4
+LDR/0-4
 ```
 
 Reference to data in the *leader* at character position 6 (1 character).
 
 ```
-LDR~6
+LDR/6
 ```
 
 Reference to data in the control field 007 (see [MARCspec as string interpretation](#interpretation) for further explanation) at character position 0 (1 character).
 
 ```
-007~0
+007/0
 ```
 
 Reference to all control fields.
 
 ```
-00X
+00.
 ```
 
 ### Reference to data in data fields or subfields
@@ -285,19 +285,19 @@ Reference to *data content* in the subfields "a", "b" and "c" of field "245".
 Reference to *data content* in the subfield "a" of all fields beginning with "24".
 
 ```
-24Xa
+24.a
 ```
 
 Reference to *data content* in the subfield "a" of all fields beginning with "2" and ending with "5".
 
 ```
-2X5a
+2.5a
 ```
 
 Reference to *data content* in the subfield "a" of all fields beginning with "2".
 
 ```
-2XXa
+2..a
 ```
 
 ### Reference to data in subfields of data fields within the context of indicators
