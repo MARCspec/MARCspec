@@ -20,13 +20,13 @@ See also [Definition of MARC related terms used in this spec].
 
 Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of fields, subfields and its contents. There are three kinds of MARC fields: the *leader*, the *control field* and *data field*. The *data content* in the *leader* and in the *control fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
 
-A **MARCspec** is a reference to the content data in a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*. The *data elements* of the MARC record being referenced may be represented through a *set of data*, having zero to n *data elements*. Neither MARCspec defines the form of this *set of data*, nor the encoding of the referenced *data content*.  
+A **MARCspec** is a reference to the content data in a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*. The *data elements* of the MARC record being referenced may be represented through a *set of data*, having zero or more *data elements*. Neither MARCspec defines the form of this *set of data*, nor the encoding of the referenced *data content*.  
 
-## Expressing MARCspecs as string
+# Expressing MARCspecs as string
 
-A MARCspec as string might not fulfil all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools implemented MARCspec.
+A MARCspec as string might not fulfill all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, like through substrings, regular expressions, rules for repeatable fields and subfields. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools implemented MARCspec.
 
-### Basic references
+## Basic references
 
 A MARCspec as string should cope the following basic references:
 
@@ -42,7 +42,7 @@ References a MARCspec as string does not cope
 * Reference to *data content* wthin the context of other *data content*
 * Reference to *data elements* (entries) in the MARC record directory
 
-### Form of MARCspec as string
+## Form of MARCspec as string
 
 **This section is normative.**
 
@@ -140,7 +140,7 @@ MARCspec                 = fieldTag (fieldSpec / characterSpec / subfieldSpec)
 
 
 
-## MARCspec as string interpretation
+# MARCspec as string interpretation
 
 [MARCspec as string interpretation]: #interpretation
 
@@ -158,7 +158,7 @@ Because of the limited expressivity of the MARCspec as string there must be some
 
 * Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
-## Definition of MARC related terms used in this spec
+# Definition of MARC related terms used in this spec
 
 [Definition of MARC related terms used in this spec]: #definition-of-marc-related-terms-used-in-this-spec
 
@@ -280,9 +280,9 @@ see *data field*
 
 A *field* whose length is determined for each occurrence by the length of data comprising that occurrence. There are two types of variable fields *control fields* and *data fields*.
 
-## Examples
+# Examples
 
-### Reference to data in the leader and control fields plus character position and range
+## Reference to data in the leader and control fields plus character position and range
 
 Reference to all data in the *leader*.
 
@@ -314,7 +314,7 @@ Reference to all control fields.
 00.
 ```
 
-### Reference to data in data fields or subfields
+## Reference to data in data fields or subfields
 
 Reference to *data elements* of all repetions of the "100" field.
 
@@ -394,7 +394,7 @@ Reference to values of the subfield "a" of all fields beginning with "3".
 3..$a
 ```
 
-### Reference to values of subfields of data fields within the context of indicators
+## Reference to values of subfields of data fields within the context of indicators
 
 Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value "1".
 
@@ -426,6 +426,7 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 245$a__0
 ```
 
+# References
 
 ## Normative references
 
