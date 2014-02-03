@@ -76,10 +76,10 @@ A **characterSpec** is a reference to a character or a range of characters withi
 characterSpec = "/" characterPositionOrRange
 ```
 
-A *character position or range* consists of one to n digits representing the character position optionally followed by one to n digits prefixed with the character "-" representing the character range.
+A *character position or range* consists of one or more digits representing the character position, optionally followed by one or more digits prefixed with the character "-" representing the character range, or just followed by the character "-" to indicate a character range without specifiing the charcter range ending position.
 
 ```
-characterPositionOrRange = *DIGIT [ "-" *DIGIT ]
+characterPositionOrRange = *DIGIT [ "-" [ *DIGIT ] ]
 ```
 
 The **subfieldSpec** is a reference to the value of a *subfield* of a field. It consits of the *subfield tags* either preeceded or optionally followed by indicators.
@@ -88,7 +88,7 @@ The **subfieldSpec** is a reference to the value of a *subfield* of a field. It 
 subfieldSpec = subfieldTags [ indicators ] / indicators subfieldTags
 ```
 
-*Subfield tags* consist of one to n lowercase alphabetic, digits or special characters each of them prefix with the character "$". A single *subfield tag* may be followed by an index, which in case of repeatable subfields is a reference to a specific repetion. Instead of a list of subfields it is also possible to define a range of subfields. A range of subfields is restricted to either alphabetic or numeric *subfield tags*. 
+*Subfield tags* consist of one or more lowercase alphabetic, digits or special characters each of them prefix with the character "$". A single *subfield tag* may be followed by an index, which in case of repeatable subfields is a reference to a specific repetion. Instead of a list of subfields it is also possible to define a range of subfields. A range of subfields is restricted to either alphabetic or numeric *subfield tags*. 
 
 In a list of *subfield tags*, these may occur in non ordered sequence.
 
@@ -128,7 +128,7 @@ indicator                = 1*1(alphalower / DIGIT)
 indicator1               = indicator
 indicator2               = indicator
 indicators               = "_"(indicator1 / "_") [ indicator2 / "_" ]
-characterPositionOrRange = *DIGIT [ "-" *DIGIT ]
+characterPositionOrRange = *DIGIT [ "-" [ *DIGIT ] ]
 index                    = "[" characterPositionOrRange "]"
 characterSpec            = "/" characterPositionOrRange
 subfieldChar             = %x21-3F / %5B-7B / %7D-7E ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
@@ -308,6 +308,12 @@ Reference to data in the control field 007 at character position 0 (1 character)
 007/0
 ```
 
+Reference to all data but the first character in the control field "007".
+
+```
+007/1-
+```
+
 Reference to all control fields.
 
 ```
@@ -328,16 +334,22 @@ Reference to the first "300" field.
 300[0]
 ```
 
-Reference to the second "300" field.
+Reference to the second repetition of the "300" field.
 
 ```
 300[1]
 ```
 
-Reference to the first, second and third "300" field.
+Reference to the first, second and third repetition of the "300" field.
 
 ```
 300[0-2]
+```
+
+Reference to all but the first repetition of the "300" field.
+
+```
+300[1-]
 ```
 
 Reference to value of the subfield "a" of field "245".
