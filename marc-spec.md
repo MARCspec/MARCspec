@@ -126,14 +126,14 @@ The **subfieldSpec** is a reference to the value of a *subfield* of a field. It 
 subfieldSpec = subfieldTags [ indicators ] / indicators subfieldTags
 ```
 
-*Subfield tags* consist of one or more lowercase alphabetic, digits or special characters each of them prefix with the character "$". A single *subfield tag* may be followed by an index, which in case of repeatable subfields is a reference to a specific repetion. Instead of a list of subfields it is also possible to define a range of subfields. A range of subfields is restricted to either alphabetic or numeric *subfield tags*. 
+*Subfield tags* consist of one or more lowercase alphabetic, digits or special characters each of them prefixed with the character "$". A single *subfield tag* may be followed by an *index* (which in case of repeatable subfields is a reference to a specific repetition) and a *characterSpec*. Instead of a list of subfields it is also possible to define a range of subfields. A range of subfields is restricted to either alphabetic or numeric *subfield tags*. Neither *index* nor *characterSpec* are not allowed for subfield ranges.
 
 In a list of *subfield tags*, these may occur in non ordered sequence.
 
 ```
 subfieldChar     = %x21-3F / %5B-7B / %7D-7E ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
 subfieldTagRange = %x61-7A "-" %x61-7A / %x30-39 "-" %x30-39 ; a-z"-"a-z / 0-9"-"0-9 
-subfieldTags     = 1*( "$" ( subfieldChar [ index ] [ characterPositionOrRange ] / subfieldTagRange ) )
+subfieldTags     = 1*( "$" ( subfieldChar [ index ] [ characterSpec ] / subfieldTagRange ) )
 ```
 
 ### Reference to contextualized data
