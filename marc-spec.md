@@ -60,7 +60,6 @@ The whole ABNF for MARCspec shows as follows
 alphaupper               = %x41-5A
                                 ; A-Z
                                 ; ^[A-Z]$
-
 alphalower               = %x61-7A
                                 ; a-z
                                 ; ^[a-z]$
@@ -70,42 +69,32 @@ indicator1               = indicator
 indicator2               = indicator
 indicators               = "_" (indicator1 / "_") [indicator2 / "_"]
                                 ; ^(_[_a-z0-9][_a-z0-9]{0,1})$
-
 fieldTag                 = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
                                 ; [a-z0-9.][a-z0-9.][a-z0-9.] / [A-Z0-9.][A-Z0-9.][A-Z0-9.]
                                 ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})$
-
 lastCharacter            = "-"
                                 ; the last character of the referenced data content
                                 ; ^\-$
-
 characterPosition        = 1*DIGIT / lastCharacter
                                 ; [0-9] / -
                                 ; ^([0-9]+|\-)$
-
 characterRange           = 1*DIGIT "-" *DIGIT
                                 ; [0-9]-[0-9] / [0-9]-
                                 ;^[0-9]+\-[0-9]*$
-
 characterPositionOrRange = characterPosition / characterRange
                                 ; ^(([0-9]+|\-)|[0-9]+\-[0-9]*)$
 index                    = "[" characterPositionOrRange "]"
                                 ; ^\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]$
-
 characterSpec            = "/" characterPositionOrRange
                                 ; ^/(([0-9]+|\-)|[0-9]+\-[0-9]*)$
-
 subfieldChar             = %x21-3F / %x5B-7B / %x7D-7E
                                 ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
                                 ; ^[\!-\?\[-\{\}-~]$
-
 subfieldTag              = "$" subfieldChar
                                 ; ^\$[\!-\?\[-\{\}-~]$
-
 subfieldTagRange         = "$" ( (%x61-7A "-" %x61-7A) / (%x30-39 "-" %x30-39) )
                                 ; [a-z]-[a-z] / [0-9]-[0-9]
                                 ; ^\$[a-z]\-[a-z]\$[0-9]\-[0-9]$
-
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
                                 ; ^((\$[\!-\?\[-\{\}-~]|\$[a-z]\-[a-z]\$[0-9]\-[0-9])(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}(/(([0-9]+|\-)|[0-9]+\-[0-9]*)){0,1})$
 comparisonString         = "\" *VARCHAR
@@ -113,21 +102,17 @@ comparisonString         = "\" *VARCHAR
 operator                 = "=" / "^" / "~" / "?"
                                 ; equal / unequal / includes / exists
                                 ; ^(\=|\^|~|\?)$
-
 subTerm                  = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
 subSpec                  = "{" [subTerm] operator subTerm "}"
-
 subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
-
 fieldSpec                = fieldTag [index] *subSpec
                                 ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}$
-
 MARCspec                 = fieldSpec [ characterSpec / subfieldSpec ]
 ``` 
 
 ### General form
 
-Every **MARCspec** consists of one fieldSpec followed optionally either by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
+Every **MARCspec** consists of one fieldSpec either followed optionally by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
 
 ```
 MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
@@ -289,6 +274,15 @@ A *subSpec* is **false**, if
 * with the operator "?" by the right hand *subTerm* no referenced value exists.
 
 * one of the encapsulted *subSpecs* are validated as false (AND).
+
+### SubSpec validation table
+
+| operator  | right is null | left equals right | right is subpart of left | left is subpart of right |
+|:---------:|:-------------:|:-----------------:|:------------------------:|:------------------------:|
+|**=**      |false          |true               |false                     |false                     |
+|**^**      |true           |false              |true                      |true                      |
+|**~**      |false          |true               |true                      |false                     |
+|**?**      |false          |true               |true                      |true                      |
 
 # Definition of MARC related terms used in this spec
 
@@ -514,19 +508,20 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 ## Normative references
 
 * [RFC 2119]
-* [RFC 2234]
+* [RFC 5234]
 * [ISO 2709]
 
 ## Informative references
 
-* [MARC 21]
-* [RDF]
-* [Linked Data]
-* [Uniform Resource Identifier (URI)]
+* [MARC]
 * [MARC 21 Principles]
+* [RECORD STRUCTURE]
 * [marcspec]
 * [solrmarc]
 * [catmandu]
+* [easyM2R]
+* [Network Development and MARC Standards Office]
+
 
 ## Revision history
 
@@ -534,9 +529,6 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 
 
 [MARC]: http://www.loc.gov/marc/
-[RDF]: http://www.w3.org/TR/rdf-primer/
-[Linked Data]: http://www.w3.org/DesignIssues/LinkedData.html
-[Uniform Resource Identifier (URI)]: http://www.ietf.org/rfc/rfc3986.txt
 [MARC 21 Principles]: http://www.loc.gov/marc/96principl.html
 [marcspec]: https://github.com/billdueber/marcspec
 [solrmarc]: https://code.google.com/p/solrmarc/
