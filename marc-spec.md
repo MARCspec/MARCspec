@@ -1,6 +1,6 @@
 # Introduction
 
-Since it is a common task to map [MARC] data to arbitrary formats, these mappings are normally based on a set of definitions of MARC fields and subfields called *MARC field specification* or short *MARC spec*.
+Since it became a common task to map [MARC] data to arbitrary formats, these mappings are normally based on a set of definitions of MARC fields and subfields called *MARC field specification* or short *MARC spec*.
 
 There are already implementations of MARC specs in tools like [marcspec], [catmandu], [solrmarc] and [easyM2R]. Each of them using a different flavour of MARC spec. This document is an approach to normalize such field specifications.
 
@@ -52,35 +52,82 @@ References a MARCspec as string does not cope
 
 **This section is normative.**
 
-The **Augmented BNF for Syntax Specifications: ABNF** [RFC 2234] is used to define the form of the MARCspec as string.
+The **Augmented BNF for Syntax Specifications: ABNF** [RFC 5234] is used to define the form of the MARCspec as string.
 
 The whole ABNF for MARCspec shows as follows
 
 ```
-alphaupper               = %x41-5A ; A-Z
-alphalower               = %x61-7A ; a-z
-indicator                = 1*1( alphalower / DIGIT )
+alphaupper               = %x41-5A
+                                ; A-Z
+                                ; ^[A-Z]$
+
+alphalower               = %x61-7A
+                                ; a-z
+                                ; ^[a-z]$
+indicator                = alphalower / DIGIT
+                                ; ^([a-z0-9])$
 indicator1               = indicator
 indicator2               = indicator
-indicators               = "_"( indicator1 / "_" ) [ indicator2 / "_" ]
-lastCharacter            = "-" ; the last character of the referenced data content
-characterPosition        = *DIGIT / lastCharacter 
-characterRange           = *DIGIT "-" [ *DIGIT ]
+indicators               = "_" (indicator1 / "_") [indicator2 / "_"]
+                                ; ^(_[_a-z0-9][_a-z0-9]{0,1})$
+
+fieldTag                 = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
+                                ; [a-z0-9.][a-z0-9.][a-z0-9.] / [A-Z0-9.][A-Z0-9.][A-Z0-9.]
+                                ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})$
+
+lastCharacter            = "-"
+                                ; the last character of the referenced data content
+                                ; ^\-$
+
+characterPosition        = 1*DIGIT / lastCharacter
+                                ; [0-9] / -
+                                ; ^([0-9]+|\-)$
+
+characterRange           = 1*DIGIT "-" *DIGIT
+                                ; [0-9]-[0-9] / [0-9]-
+                                ;^[0-9]+\-[0-9]*$
+
 characterPositionOrRange = characterPosition / characterRange
+                                ; ^(([0-9]+|\-)|[0-9]+\-[0-9]*)$
 index                    = "[" characterPositionOrRange "]"
+                                ; ^\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]$
+
 characterSpec            = "/" characterPositionOrRange
-subfieldChar             = %x21-3F / %5B-7B / %7D-7E ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
-subfieldTagRange         = %x61-7A "-" %x61-7A / %x30-39 "-" %x30-39 ; a-z"-"a-z / 0-9"-"0-9 
-subfieldTags             = 1*( "$" ( subfieldChar [ index ] / subfieldTagRange ) )
-subfieldSpec             = subfieldTags [ indicators ] / indicators subfieldTags
-fieldTag                 = 3( alphalower / DIGIT / "." ) / 3( alphaupper / DIGIT / "." )
-fieldSpec                = fieldTag [ index ]
+                                ; ^/(([0-9]+|\-)|[0-9]+\-[0-9]*)$
+
+subfieldChar             = %x21-3F / %x5B-7B / %x7D-7E
+                                ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
+                                ; ^[\!-\?\[-\{\}-~]$
+
+subfieldTag              = "$" subfieldChar
+                                ; ^\$[\!-\?\[-\{\}-~]$
+
+subfieldTagRange         = "$" ( (%x61-7A "-" %x61-7A) / (%x30-39 "-" %x30-39) )
+                                ; [a-z]-[a-z] / [0-9]-[0-9]
+                                ; ^\$[a-z]\-[a-z]\$[0-9]\-[0-9]$
+
+subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
+                                ; ^((\$[\!-\?\[-\{\}-~]|\$[a-z]\-[a-z]\$[0-9]\-[0-9])(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}(/(([0-9]+|\-)|[0-9]+\-[0-9]*)){0,1})$
+comparisonString         = "\" *VARCHAR
+                                ; ^\\[\!-~]*$
+operator                 = "=" / "^" / "~" / "?"
+                                ; equal / unequal / includes / exists
+                                ; ^(\=|\^|~|\?)$
+
+subTerm                  = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
+subSpec                  = "{" [subTerm] operator subTerm "}"
+
+subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
+
+fieldSpec                = fieldTag [index] *subSpec
+                                ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}$
+
 MARCspec                 = fieldSpec [ characterSpec / subfieldSpec ]
 ``` 
 
 ### General form
 
-Every MARCspec MUST have a fieldSpec either optionally followed by a characterSpec or a subfieldSpec.
+Every **MARCspec** consists of one fieldSpec followed optionally either by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
 
 ```
 MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
@@ -88,76 +135,105 @@ MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
 
 ### Reference to field data
 
-A **fieldSpec** is a reference to *field data* of a field. It consits of the three character *field tag* and optionally an *index*.
+A **fieldSpec** is a reference to *field data* of a field. It consists of the three character *field tag* (fieldTag), followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
 
-The **field tag** may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ".". The character "." is interpreted as a wildcard. E.g. *3..* is then a reference to the *data elements* in all *fields* beginning with *3*. 
+The **field tag** may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ".". The character "." is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
 
-The special *field tag* "LDR" is the field tag for the *leader*. 
+The special *field tag* "LDR" is the *field tag* for the *leader*. 
 
 ```
-alphaupper   = %x41-5A ; A-Z
-alphalower   = %x61-7A; a-z
-fieldTag     = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".") / "LDR"
-fieldSpec    = fieldTag [ index ]
+alphaupper = %x41-5A ; A-Z
+alphalower = %x61-7A; a-z
+fieldTag   = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
+fieldSpec  = fieldTag [index] *subSpec
 ``` 
 
 ### Reference to substring
 
-A **characterSpec** is a reference to a character or a range of characters within a field. It consits of the *character position or range* prefixed with the charcter "/".
+A **characterSpec** is a reference to a character or a range of characters within a *field* or *subfield*. It consists of the *character position or range* prefixed with the character "/".
 
 ```
 characterSpec = "/" characterPositionOrRange
 ```
 
-A *character position or range* is either a *character postion* or a *character range*. The *character postion* is either one or more digits or the character "-" as a symbol for the last character of the referenced *data content*. A *character range* consists of one or more digits representing the character starting position followed by the character "-" and optionally followed by one or more digits representing the character ending position. If the character ending position is omitted, this means the character ending position is of the last character of the referenced *data content*.
+A **character position or range** is either a *character postion* or a *character range*.
+
+The **character postion** is either one or more digits or the character "-" as a symbol for the last character of the referenced *data content*. 
+
+The **character range** consists of one or more digits representing the character starting position followed by the character "-" and followed optionally by one or more digits representing the character ending position. If the character ending position is omitted, this means the character ending position is of the last character of the referenced *data content*.
 
 ```
-lastCharacter            = "-" ; the last character of the referenced data content
-characterPosition        = *DIGIT / lastCharacter 
-characterRange           = *DIGIT "-" [ *DIGIT ]
+lastCharacter            = "-"
+characterPosition        = 1*DIGIT / lastCharacter
+characterRange           = 1*DIGIT "-" *DIGIT
 characterPositionOrRange = characterPosition / characterRange
 ```
 
 ### Reference to data content
 
-The **subfieldSpec** is a reference to the value of a *subfield* of a field. It consits of the *subfield tags* either preeceded or optionally followed by indicators.
+The **subfieldSpec** is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [Reference to contextualized data]) and is either followed optionally by or preeceded by *indicators* (see section [SubSpecs]).
 
 ```
-subfieldSpec = subfieldTags [ indicators ] / indicators subfieldTags
+subfieldSpec = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
 ```
 
-*Subfield tags* consist of one or more lowercase alphabetic, digits or special characters each of them prefixed with the character "$". A single *subfield tag* may be followed by an *index* (which in case of repeatable subfields is a reference to a specific repetition) and a *characterSpec*. Instead of a list of subfields it is also possible to define a range of subfields. A range of subfields is restricted to either alphabetic or numeric *subfield tags*. Neither *index* nor *characterSpec* are not allowed for subfield ranges.
+A **subfieldTagSpec** consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
 
-In a list of *subfield tags*, these may occur in non ordered sequence.
+A **subfieldTag** is a *subfieldChar* preceeded by the character "$".
 
-```
-subfieldChar     = %x21-3F / %5B-7B / %7D-7E ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
-subfieldTagRange = %x61-7A "-" %x61-7A / %x30-39 "-" %x30-39 ; a-z"-"a-z / 0-9"-"0-9 
-subfieldTags     = 1*( "$" ( subfieldChar [ index ] [ characterSpec ] / subfieldTagRange ) )
-```
+A **subfieldTagRange** is preceeded by the character "$" and restricted to either two alphabetic or two numeric characters both concatenated with the character "-".
 
-### Reference to contextualized data
-
-*Indicators* consist of *indicator 1* and *indicator 2*. Both are optional. If *indicator 1* is not specified is must be replaced by the character "\_". If *indicator 2* is not specified it might be replaced by the character "\_" or left blank.
+A **subfieldChar** is a lowercase alphabetic, a numeric character or a special character.
 
 ```
-indicators = "_"(indicator1 / "_") [ indicator2 / "_" ]
-```
-
-If present both *indicator 1* and *indicator 2* consists of one lowercase alphabetic or numeric character.
-
-```
-indicator  = 1*1(alphalower / DIGIT)
-indicator1 = indicator
-indicator2 = indicator
+subfieldChar     = %x21-3F / %x5B-7B / %x7D-7E
+subfieldTag      = "$" subfieldChar
+subfieldTagRange = "$" ( (%x61-7A "-" %x61-7A) / (%x30-39 "-" %x30-39) )
+subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 ```
 
 ### Reference to repetitions
 
-An index has the same form as the *character position or range* but is enclosed with the characters "\[" and "]".
+For repeatable *fields* and *subfields* each repetition can be referenced by its **index**. An index has the same syntax as the *character position or range* but is enclosed with the characters "\[" and "]". The first repetition of a *field* or  a *subfield* is always referenced with the index "\[0]". The last repetition of a *field* or  a *subfield* is referenced with the index "\[-]".
 
 ```
 index = "[" characterPositionOrRange "]"
+```
+
+### Reference to contextualized data
+
+#### Indicators
+
+**Indicators** only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character "\_". There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified is must be replaced by the character "\_". If *indicator 2* is not specified it might be replaced by the character "\_" or left blank.
+
+```
+indicator  = alphalower / DIGIT
+indicator1 = indicator
+indicator2 = indicator
+indicators = "_" (indicator1 / "_") [indicator2 / "_"]
+```
+
+##### SubSpecs
+
+With a **subSpec** the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
+
+A *subSpec* is enclosed with the characters "{" and "}". It consists of one or two **subTerms** concatenated with an **operator**. By omitting the first *subTerm*, this implicitly makes the preceeding spec as the left hand *subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). 
+
+```
+subSpec          = "{" [subTerm] operator subTerm "}"
+```
+
+The **operator** is either the character "=" (as a symbol for 'equal'), the character "^" (as a symbol for 'unequal'), the character "~" (as a symbol for 'includes') or the character "?" (as a symbol for 'exists').
+
+```
+operator         = "=" / "^" / "~" / "?"
+```
+ 
+A **subTerm** is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A **comparisonString** can be every combination of ASCII characters preceeded by the character "\". The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
+
+```
+comparisonString = "\" *VARCHAR
+subTerm          = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
 ```
 
 ## MARCspec interpretation
@@ -175,6 +251,44 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 * For the character position or range the digit "0" is always a reference to the first character in the *leader* or *control field*.
 
 * Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+
+### SubSpec interpretation
+
+* For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceeding spec gets referenced (OR).
+
+* For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
+
+* As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
+
+* If the left hand *subTerm* is omitted, as a shortcut for the operator "=", the operator can also be omitted. 
+
+### SubSpec validation
+
+*SubSpecs* get validated by the following rules:
+
+A *subSpec* is **true**, if
+
+* with the operator "=" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+
+* with the operator "^" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+
+* with the operator "~" one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+ 
+* with the operator "?" by the right hand *subTerm* a referenced value exists.
+
+* all of the encapsulted *subSpecs* are validated as true (AND).
+
+A *subSpec* is **false**, if
+
+* with the operator "=" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+
+* with the operator "^" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+
+* with the operator "~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+
+* with the operator "?" by the right hand *subTerm* no referenced value exists.
+
+* one of the encapsulted *subSpecs* are validated as false (AND).
 
 # Definition of MARC related terms used in this spec
 
@@ -216,7 +330,7 @@ MARCspec does not redefine terms already used by the [Network Development and MA
 
 # Examples
 
-## Reference to field data
+## Reference to field data examples
 
 Reference to *field data* of the *leader*.
 
@@ -241,6 +355,8 @@ Reference to *data elements* of all repetions of the "100" field.
 ```
 100
 ```
+
+## Reference to field data with repetitions examples
 
 Reference to the first "300" field.
 
@@ -272,7 +388,7 @@ Reference to the last of the "300" field.
 300[-]
 ```
 
-## Reference to substring
+## Reference to substring examples
 
 Reference to substring of *field data* in the *leader* from character position 0 to character position 4 (5 characters).
 
@@ -310,18 +426,12 @@ Reference to the last character of the value of the subfield "a" of field "245".
 245$a/-
 ```
 
-## Reference to data content
+## Reference to data content examples
 
 Reference to value of the subfield "a" of field "245".
 
 ```
 245$a
-```
-
-Reference to value of the subfield "a" of the first "300" field.
-
-```
-300[0]$a
 ```
 
 Reference to the value of the subfields "a", "b" and "c" of field "245".
@@ -336,6 +446,20 @@ Same as above, but with the use of a *subfield tag range*.
 245$a-c
 ```
 
+Reference to the value of the subfields "_" and "$" of field "300".
+
+```
+300$_$$
+```
+
+## Reference to data content with repetitions examples
+
+Reference to value of the subfield "a" of the first "300" field.
+
+```
+300[0]$a
+```
+
 Reference to the value of the first subfield "a" of the field "300"
 
 ```
@@ -348,11 +472,8 @@ Reference to the value of the last subfield "a" of the field "300"
 300$a[-]
 ```
 
-Reference to the value of the subfields "_" and "$" of field "300".
 
-```
-300$_$$
-```
+## Reference to contextualized data examples
 
 Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value "1".
 
@@ -383,6 +504,10 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 ```
 245$a__0
 ```
+
+## Reference to contextualized data with subSpecs examples
+
+
 
 # References
 
@@ -416,7 +541,7 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 [marcspec]: https://github.com/billdueber/marcspec
 [solrmarc]: https://code.google.com/p/solrmarc/
 [RFC 2119]: http://www.ietf.org/rfc/rfc2119.txt
-[RFC 2234]: https://www.ietf.org/rfc/rfc2234.txt
+[RFC 5234]: http://tools.ietf.org/html/rfc5234
 [catmandu]: http://librecat.org/
 [ISO 2709]: http://en.wikipedia.org/wiki/ISO_2709
 [easyM2R]: https://github.com/cKlee/easyM2R
