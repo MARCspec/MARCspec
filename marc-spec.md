@@ -41,11 +41,11 @@ A MARCspec as string should cope the following basic references:
 * Reference to *data content* in *variable fields* by *subfield tags*
 * Reference to *data content* of one or more repetitions of a *subfield* by *subfield index* or subfield index range
 * Reference to substring of *data content* in *subfields* by *character position or range*
+* Reference to *data content* wthin the context of other *data content* (**new**)
 
 References a MARCspec as string does not cope
 
 * Reference to *data elements* in related records
-* Reference to *data content* wthin the context of other *data content*
 * Reference to *data elements* (entries) in the MARC record directory
 
 ## Form of MARCspec as string
@@ -156,7 +156,7 @@ characterPositionOrRange = characterPosition / characterRange
 
 ### Reference to data content
 
-The **subfieldSpec** is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [Reference to contextualized data]) and is either followed optionally by or preeceded by *indicators* (see section [SubSpecs]).
+The **subfieldSpec** is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [SubSpecs]) and is either followed optionally by or preeceded by *indicators* (see section [Indicators]).
 
 ```
 subfieldSpec = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
@@ -198,23 +198,23 @@ indicator2 = indicator
 indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 ```
 
-##### SubSpecs
+#### SubSpecs
 
 With a **subSpec** the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
 
 A *subSpec* is enclosed with the characters "{" and "}". It consists of one or two **subTerms** concatenated with an **operator**. By omitting the first *subTerm*, this implicitly makes the preceeding spec as the left hand *subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). 
 
 ```
-subSpec          = "{" [subTerm] operator subTerm "}"
+subSpec = "{" [subTerm] operator subTerm "}"
 ```
 
 The **operator** is either the character "=" (as a symbol for 'equal'), the character "^" (as a symbol for 'unequal'), the character "~" (as a symbol for 'includes') or the character "?" (as a symbol for 'exists').
 
 ```
-operator         = "=" / "^" / "~" / "?"
+operator = "=" / "^" / "~" / "?"
 ```
  
-A **subTerm** is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A **comparisonString** can be every combination of ASCII characters preceeded by the character "\". The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
+A **subTerm** is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A **comparisonString** can be every combination of ASCII characters preceeded by the character "\". The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
 ```
 comparisonString = "\" *VARCHAR
@@ -241,6 +241,8 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 * For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceeding spec gets referenced (OR).
 
+* For encapsulted *subSpecs*, if one *subSpec* gets validated as false, the preceeding spec doesn't get referenced (AND).
+
 * For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 
 * As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
@@ -261,6 +263,8 @@ A *subSpec* is **true**, if
  
 * with the operator "?" by the right hand *subTerm* a referenced value exists.
 
+* one of the repeated *subSpecs* are validated as true (OR).
+
 * all of the encapsulted *subSpecs* are validated as true (AND).
 
 A *subSpec* is **false**, if
@@ -272,6 +276,8 @@ A *subSpec* is **false**, if
 * with the operator "~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 
 * with the operator "?" by the right hand *subTerm* no referenced value exists.
+
+* all of the repeated *subSpecs* are validated as false (OR).
 
 * one of the encapsulted *subSpecs* are validated as false (AND).
 
@@ -467,7 +473,7 @@ Reference to the value of the last subfield "a" of the field "300"
 ```
 
 
-## Reference to contextualized data examples
+## Reference to contextualized data with indicators examples
 
 Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value "1".
 
@@ -500,6 +506,24 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 ```
 
 ## Reference to contextualized data with subSpecs examples
+
+Reference data content of subfield "z" of field "020", if subfield "a" of field "020" does not exist.
+
+```
+020$z{^$a}
+```
+
+Example data:
+
+100 	1#$6880-01$aZilbershtain, Yitshak ben David Yosef.
+880 	1#$6100-01/(2/r$a, יצחק יוסף בן דוד.
+
+Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (substring indices 3-5) and the string "880".
+
+```
+880$a{100_1$6~880$6/3-5{100_1$6~\880}}
+```
+
 
 
 
