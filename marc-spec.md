@@ -507,6 +507,30 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 
 ## Reference to contextualized data with subSpecs examples
 
+###Checking type of record dependencies via string comparison
+
+If Leader/06 = t: Books
+
+Reference to character with position '18' of field '008', if character with position '06' in Leader equals 't'.
+
+```
+008/18{LDR/06=\t}
+```
+
+---
+
+If Leader/06 = a and Leader/07 = a, c, d, or m: Books
+
+Reference to character with position '18' of field '008', if character with position '06' in Leader equals 'a' AND character with position '07' in Leader equals 'a', 'c', 'd' or 'm'.
+
+```
+008/18{LDR/06=\a{LDR/07=\a}{LDR/07=\c}{LDR/07=\d}{LDR/07=\m}}
+```
+
+---
+
+###Checking existence of fields
+
 Reference data content of subfield "z" of field "020", if subfield "a" of field "020" does not exist.
 
 ```
