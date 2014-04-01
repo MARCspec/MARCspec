@@ -513,9 +513,11 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 020$z{^$a}
 ```
 
+---
+
 Example data:
 
-100 	1#$6880-01$aZilbershtain, Yitshak ben David Yosef.
+100 	1#$6880-01$aZilbershtain, Yitshak ben David Yosef.<br>
 880 	1#$6100-01/(2/r$a, יצחק יוסף בן דוד.
 
 Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (substring indices 3-5) and the string "880".
