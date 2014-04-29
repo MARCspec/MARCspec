@@ -189,7 +189,7 @@ index = "[" characterPositionOrRange "]"
 
 #### Indicators
 
-**Indicators** only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character "\_". There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified is must be replaced by the character "\_". If *indicator 2* is not specified it might be replaced by the character "\_" or left blank.
+**Indicators** only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character "\_". There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character "\_". If *indicator 2* is not specified it might be replaced by the character "\_" or left blank.
 
 ```
 indicator  = alphalower / DIGIT
@@ -202,16 +202,23 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 With a **subSpec** the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
 
-A *subSpec* is enclosed with the characters "{" and "}". It consists of one or two **subTerms** concatenated with an **operator**. By omitting the first *subTerm*, this implicitly makes the preceeding spec as the left hand *subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). 
+A *subSpec* is enclosed with the characters "{" and "}". The **left hand subTerm** and the **right hand subTerm** MUST be concatenated with an **operator**. By omitting the *left hand subTerm*, this implicitly makes the preceeding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* "?". 
 
 ```
-subSpec = "{" [subTerm] operator subTerm "}"
+subSpec = "{" [ [subTerm] operator ] subTerm "}"
 ```
 
-The **operator** is either the character "=" (as a symbol for 'equal'), the character "^" (as a symbol for 'unequal'), the character "~" (as a symbol for 'includes') or the character "?" (as a symbol for 'exists').
+The **operator** is either
+
+* the character "=" (as a symbol for 'equal'), 
+* the characters "!=" (as a symbol for 'unequal'),
+* the character "~" (as a symbol for 'includes'), 
+* the characters "!~" (as a symbol for 'not includes') or
+* the character "!" (as a symbol for 'not exists').
+* the character "?" (as a symbol for 'exists').
 
 ```
-operator = "=" / "^" / "~" / "?"
+operator = "=" / "!=" / "~" / "!~" / "!" / "?"
 ```
  
 A **subTerm** is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A **comparisonString** can be every combination of ASCII characters preceeded by the character "\". The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
@@ -227,27 +234,19 @@ subTerm          = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec )
 
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
-* A MARCspec without *subfield tags* or *character position or range* is a reference to all *data elements* of the field.
-
-* For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
-
-* For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
-
-* For the character position or range the digit "0" is always a reference to the first character in the *leader* or *control field*.
-
-* Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+1. A MARCspec without *subfield tags* or *character position or range* is a reference to all *data elements* of the field.
+2. For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
+3. For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
+4. For the character position or range the digit "0" is always a reference to the first character in the *leader* or *control field*.
+5. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
 ### SubSpec interpretation
 
-* For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceeding spec gets referenced (OR).
-
-* For encapsulted *subSpecs*, if one *subSpec* gets validated as false, the preceeding spec doesn't get referenced (AND).
-
-* For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
-
-* As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
-
-* If the left hand *subTerm* is omitted, as a shortcut for the operator "=", the operator can also be omitted. 
+1. For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceeding spec gets referenced (OR).
+2. For encapsulted *subSpecs*, if one *subSpec* gets validated as false, the preceeding spec doesn't get referenced (AND).
+3. For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
+4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
+5. If the left hand *subTerm* is omitted, as a shortcut for the operator "=", the operator can also be omitted. 
 
 ### SubSpec validation
 
@@ -257,11 +256,15 @@ A *subSpec* is **true**, if
 
 * with the operator "=" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
 
-* with the operator "^" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+* with the operator "!=" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
 
 * with the operator "~" one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+
+* with the operator "!~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
  
-* with the operator "?" by the right hand *subTerm* a referenced value exists.
+* with the operator "?" by the right hand *subTerm* referenced data exists.
+
+* with the operator "!" by the right hand *subTerm* no referenced data exists.
 
 * one of the repeated *subSpecs* are validated as true (OR).
 
@@ -269,13 +272,19 @@ A *subSpec* is **true**, if
 
 A *subSpec* is **false**, if
 
+* the left hand *subTerm* does not reference any data (null).
+
 * with the operator "=" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
 
-* with the operator "^" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+* with the operator "!=" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
 
 * with the operator "~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 
-* with the operator "?" by the right hand *subTerm* no referenced value exists.
+* with the operator "!~" one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+
+* with the operator "?" by the right hand *subTerm* no referenced data exists (null).
+
+* with the operator "!" by the right hand *subTerm* referenced data exists.
 
 * all of the repeated *subSpecs* are validated as false (OR).
 
@@ -283,12 +292,14 @@ A *subSpec* is **false**, if
 
 ### SubSpec validation table
 
-| operator  | right is null | left equals right | right is subpart of left | left is subpart of right |
-|:---------:|:-------------:|:-----------------:|:------------------------:|:------------------------:|
-|**=**      |false          |true               |false                     |false                     |
-|**^**      |true           |false              |true                      |true                      |
-|**~**      |false          |true               |true                      |false                     |
-|**?**      |false          |true               |true                      |true                      |
+| operator  | right is null | left equals right | right is subpart of left | left is subpart of right | other |
+|:---------:|:-------------:|:-----------------:|:------------------------:|:------------------------:|:-----:|
+|**=**      |false          |true               |false                     |false                     |false  |
+|**!=**     |true           |false              |true                      |true                      |true   |
+|**~**      |false          |true               |true                      |false                     |false  |
+|**!~**     |true           |false              |false                     |true                      |true   |
+|**!**      |true           |false              |false                     |false                     |false  |
+|**?**      |false          |true               |true                      |true                      |true   |
 
 # Definition of MARC related terms used in this spec
 
@@ -507,7 +518,13 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 
 ## Reference to contextualized data with subSpecs examples
 
-###Checking type of record dependencies via string comparison
+###Checking dependencies via string comparison
+
+```
+245$b{LDR/06=\t}
+```
+
+---
 
 If Leader/06 = t: Books
 
@@ -521,7 +538,7 @@ Reference to character with position '18' of field '008', if character with posi
 
 If Leader/06 = a and Leader/07 = a, c, d, or m: Books
 
-Reference to character with position '18' of field '008', if character with position '06' in Leader equals 'a' AND character with position '07' in Leader equals 'a', 'c', 'd' or 'm'.
+Reference to character with position '18' of field '008', if character with position '06' in Leader equals 'a' AND character with position '07' in Leader equals 'a', 'c', 'd' OR 'm'.
 
 ```
 008/18{LDR/06=\a{LDR/07=\a}{LDR/07=\c}{LDR/07=\d}{LDR/07=\m}}
@@ -529,7 +546,32 @@ Reference to character with position '18' of field '008', if character with posi
 
 ---
 
+Example data:
+
+100  1#$6880-01$aZilbershtain, Yitshak ben David Yosef.<br>
+880  1#$6100-01/(2/r$a, יצחק יוסף בן דוד.
+
+Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (characters with index range 3-5) and the string "880".
+
+```
+880$a{100_1$6~880$6/3-5{100_1$6~\880}}
+```
+
+---
+
 ###Checking existence of fields
+
+Reference data content of subfield "c" of field "020", if subfield "a" of field "020" exists.
+
+```
+020$c{$a}
+
+or
+
+020$c{?$a}
+```
+
+---
 
 Reference data content of subfield "z" of field "020", if subfield "a" of field "020" does not exist.
 
@@ -539,16 +581,7 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 
 ---
 
-Example data:
 
-100 	1#$6880-01$aZilbershtain, Yitshak ben David Yosef.<br>
-880 	1#$6100-01/(2/r$a, יצחק יוסף בן דוד.
-
-Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (substring indices 3-5) and the string "880".
-
-```
-880$a{100_1$6~880$6/3-5{100_1$6~\880}}
-```
 
 
 
