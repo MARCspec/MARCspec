@@ -4,7 +4,7 @@ Since it became a common task to map [MARC] data to arbitrary formats, these map
 
 There are already implementations of MARC specs in tools like [marcspec], [catmandu], [solrmarc] and [easyM2R]. Each of them using a different flavour of MARC spec. This document is an approach to normalize such field specifications.
 
-The hereby described specification **MARCspec** can help to build reusable MARCspec parsers and validators and facilitates the exchange of mapping definitions.
+The hereby described specification __MARCspec__ can help to build reusable MARCspec parsers and validators and facilitates the exchange of mapping definitions.
 
 ## Status of this document
 
@@ -20,7 +20,7 @@ See also [Definition of MARC related terms used in this spec].
 
 Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of fields, subfields and its contents. There are two kinds of MARC fields: *fixed fields* and *data fields*. The *field content* in the the *fixed fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
 
-**MARCspec** is very much like XPath is for XML. With MARCspec one can reference data on different levels of a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*.
+__MARCspec__ is very much like XPath is for XML. With MARCspec one can reference data on different levels of a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*.
 
 The *data* of the MARC record being referenced may be represented through a *set of data*, having zero or more *data elements*. MARCspec does neither define the form of this referenced *set of data*, nor the encoding of the referenced *data content*.  
 
@@ -34,85 +34,65 @@ To enable support for other [ISO 2709] applications MARCspecs syntax does not di
 
 A MARCspec as string should cope the following basic references:
 
-* Reference to *field data* of *fields* by *field tag*
-* Reference to *field data* of one or more repetitions of a *field* by *field index* or field index range
-* Reference to *field data* of *varibale fields* within the context of *indicators*
-* Reference to substring of *field content* in *fields* by *character position or range*
-* Reference to *data content* in *variable fields* by *subfield tags*
-* Reference to *data content* of one or more repetitions of a *subfield* by *subfield index* or subfield index range
-* Reference to substring of *data content* in *subfields* by *character position or range*
-* Reference to *data content* wthin the context of other *data content* (**new**)
+- Reference to *field data* of *fields* by *field tag*
+- Reference to *field data* of one or more repetitions of a *field* by *field index* or field index range
+- Reference to *field data* of *varibale fields* within the context of *indicators*
+- Reference to substring of *field content* in *fields* by *character position or range*
+- Reference to *data content* in *variable fields* by *subfield tags*
+- Reference to *data content* of one or more repetitions of a *subfield* by *subfield index* or subfield index range
+- Reference to substring of *data content* in *subfields* by *character position or range*
+- Reference to *data content* wthin the context of other *data content* (__new__)
 
 References a MARCspec as string does not cope
 
-* Reference to *data elements* in related records
-* Reference to *data elements* (entries) in the MARC record directory
+- Reference to *data elements* in related records
+- Reference to *data elements* (entries) in the MARC record directory
 
 ## Form of MARCspec as string
 
-**This section is normative.**
+__This section is normative.__
 
-The **Augmented BNF for Syntax Specifications: ABNF** [RFC 5234] is used to define the form of the MARCspec as string.
+The __Augmented BNF for Syntax Specifications: ABNF__ [RFC 5234] is used to define the form of the MARCspec as string.
 
 The whole ABNF for MARCspec shows as follows
 
 ```
 alphaupper               = %x41-5A
                                 ; A-Z
-                                ; ^[A-Z]$
 alphalower               = %x61-7A
                                 ; a-z
-                                ; ^[a-z]$
+positiveDigit             = %x31-39
+                                ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+positiveInteger           = "0" / positiveDigit [1*DIGIT]
 indicator                = alphalower / DIGIT
-                                ; ^([a-z0-9])$
 indicator1               = indicator
 indicator2               = indicator
 indicators               = "_" (indicator1 / "_") [indicator2 / "_"]
-                                ; ^(_[_a-z0-9][_a-z0-9]{0,1})$
 fieldTag                 = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-                                ; [a-z0-9.][a-z0-9.][a-z0-9.] / [A-Z0-9.][A-Z0-9.][A-Z0-9.]
-                                ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})$
-lastCharacter            = "-"
-                                ; the last character of the referenced data content
-                                ; ^\-$
-characterPosition        = 1*DIGIT / lastCharacter
-                                ; [0-9] / -
-                                ; ^([0-9]+|\-)$
-characterRange           = 1*DIGIT "-" *DIGIT
-                                ; [0-9]-[0-9] / [0-9]-
-                                ;^[0-9]+\-[0-9]*$
+characterPosition        = positivInteger / "#"
+characterRange           = characterPosition "-" characterPosition
 characterPositionOrRange = characterPosition / characterRange
-                                ; ^(([0-9]+|\-)|[0-9]+\-[0-9]*)$
-index                    = "[" characterPositionOrRange "]"
-                                ; ^\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]$
 characterSpec            = "/" characterPositionOrRange
-                                ; ^/(([0-9]+|\-)|[0-9]+\-[0-9]*)$
 subfieldChar             = %x21-3F / %x5B-7B / %x7D-7E
                                 ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
-                                ; ^[\!-\?\[-\{\}-~]$
 subfieldTag              = "$" subfieldChar
-                                ; ^\$[\!-\?\[-\{\}-~]$
-subfieldTagRange         = "$" ( (%x61-7A "-" %x61-7A) / (%x30-39 "-" %x30-39) )
+subfieldTagRange         = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                                 ; [a-z]-[a-z] / [0-9]-[0-9]
-                                ; ^\$[a-z]\-[a-z]\$[0-9]\-[0-9]$
+index                    = "[" characterPositionOrRange "]"
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
-                                ; ^((\$[\!-\?\[-\{\}-~]|\$[a-z]\-[a-z]\$[0-9]\-[0-9])(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}(/(([0-9]+|\-)|[0-9]+\-[0-9]*)){0,1})$
 comparisonString         = "\" *VARCHAR
-                                ; ^\\[\!-~]*$
 operator                 = "=" / "^" / "~" / "?"
                                 ; equal / unequal / includes / exists
-                                ; ^(\=|\^|~|\?)$
 subTerm                  = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
 subSpec                  = "{" [subTerm] operator subTerm "}"
 subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
 fieldSpec                = fieldTag [index] *subSpec
-                                ; ^([.a-z0-9]{3,3}|[.A-Z0-9]{3,3})(\[(([0-9]+|\-)|[0-9]+\-[0-9]*)\]){0,1}$
 MARCspec                 = fieldSpec [ characterSpec / subfieldSpec ]
 ``` 
 
 ### General form
 
-Every **MARCspec** consists of one fieldSpec either followed optionally by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
+Every __MARCspec__ consists of one fieldSpec either followed optionally by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
 
 ```
 MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
@@ -120,11 +100,11 @@ MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
 
 ### Reference to field data
 
-A **fieldSpec** is a reference to *field data* of a field. It consists of the three character *field tag* (fieldTag), followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
+A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag* (fieldTag), followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
 
-The **field tag** may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ".". The character "." is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
+The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
 
-The special *field tag* "LDR" is the *field tag* for the *leader*. 
+The special *field tag* ```LDR``` is the *field tag* for the *leader*. 
 
 ```
 alphaupper = %x41-5A ; A-Z
@@ -135,40 +115,44 @@ fieldSpec  = fieldTag [index] *subSpec
 
 ### Reference to substring
 
-A **characterSpec** is a reference to a character or a range of characters within a *field* or *subfield*. It consists of the *character position or range* prefixed with the character "/".
+A __characterSpec__ is a reference to a character or a range of characters within a *field* or *subfield*. It consists of the *character position or range* prefixed with the character ```/```.
 
 ```
 characterSpec = "/" characterPositionOrRange
 ```
 
-A **character position or range** is either a *character postion* or a *character range*.
+A __character position or range__ is either a *character postion* or a *character range*.
 
-The **character postion** is either one or more digits or the character "-" as a symbol for the last character of the referenced *data content*. 
+The __character postion__ is either a *positive integer* or the character ```#``` as a symbol for the last character of the referenced *data content*. 
 
-The **character range** consists of one or more digits representing the character starting position followed by the character "-" and followed optionally by one or more digits representing the character ending position. If the character ending position is omitted, this means the character ending position is of the last character of the referenced *data content*.
+The __character range__ consists of two *character positions* joined with the character ```-```. 
 
 ```
-lastCharacter            = "-"
-characterPosition        = 1*DIGIT / lastCharacter
-characterRange           = 1*DIGIT "-" *DIGIT
+positiveDigit            = %x31-39
+                                ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+positiveInteger          = "0" / positiveDigit [1*DIGIT]
+characterPosition        = positivInteger / "#"
+characterRange           = characterPosition "-" characterPosition
 characterPositionOrRange = characterPosition / characterRange
 ```
 
+Interpreation of a *character range* differs through the position of the special *character position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
+
 ### Reference to data content
 
-The **subfieldSpec** is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [SubSpecs]) and is either followed optionally by or preeceded by *indicators* (see section [Indicators]).
+The __subfieldSpec__ is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [SubSpecs]) and is either followed optionally by or preeceded by *indicators* (see section [Indicators]).
 
 ```
 subfieldSpec = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
 ```
 
-A **subfieldTagSpec** consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
+A __subfieldTagSpec__ consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
 
-A **subfieldTag** is a *subfieldChar* preceeded by the character "$".
+A __subfieldTag__ is a *subfieldChar* preceeded by the character ```$```.
 
-A **subfieldTagRange** is preceeded by the character "$" and restricted to either two alphabetic or two numeric characters both concatenated with the character "-".
+A __subfieldTagRange__ is preceeded by the character ```$``` and restricted to either two alphabetic or two numeric characters both concatenated with the character ```-```.
 
-A **subfieldChar** is a lowercase alphabetic, a numeric character or a special character.
+A __subfieldChar__ is a lowercase alphabetic, a numeric character or a special character.
 
 ```
 subfieldChar     = %x21-3F / %x5B-7B / %x7D-7E
@@ -179,7 +163,7 @@ subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 
 ### Reference to repetitions
 
-For repeatable *fields* and *subfields* each repetition can be referenced by its **index**. An index has the same syntax as the *character position or range* but is enclosed with the characters "\[" and "]". The first repetition of a *field* or  a *subfield* is always referenced with the index "\[0]". The last repetition of a *field* or  a *subfield* is referenced with the index "\[-]".
+For repeatable *fields* and *subfields* each repetition can be referenced by its __index__. An index has the same syntax as the *character position or range* but is enclosed with the characters ```[``` and ```]```. The first repetition of a *field* or  a *subfield* is always referenced with the index ```[0]```. The last repetition of a *field* or  a *subfield* is referenced with the index ```[#]```.
 
 ```
 index = "[" characterPositionOrRange "]"
@@ -189,7 +173,7 @@ index = "[" characterPositionOrRange "]"
 
 #### Indicators
 
-**Indicators** only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character "\_". There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character "\_". If *indicator 2* is not specified it might be replaced by the character "\_" or left blank.
+__Indicators__ only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character ```_```. There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
 
 ```
 indicator  = alphalower / DIGIT
@@ -200,28 +184,28 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 #### SubSpecs
 
-With a **subSpec** the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
+With a __subSpec__ the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
 
-A *subSpec* is enclosed with the characters "{" and "}". The **left hand subTerm** and the **right hand subTerm** MUST be concatenated with an **operator**. By omitting the *left hand subTerm*, this implicitly makes the preceeding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* "?". 
+A *subSpec* is enclosed with the characters ```{``` and ```}```. The __left hand subTerm__ and the __right hand subTerm__ MUST be concatenated with an __operator__. By omitting the *left hand subTerm*, this implicitly makes the preceeding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?```. 
 
 ```
 subSpec = "{" [ [subTerm] operator ] subTerm "}"
 ```
 
-The **operator** is either
+The __operator__ is either
 
-* the character "=" (as a symbol for 'equal'), 
-* the characters "!=" (as a symbol for 'unequal'),
-* the character "~" (as a symbol for 'includes'), 
-* the characters "!~" (as a symbol for 'not includes') or
-* the character "!" (as a symbol for 'not exists').
-* the character "?" (as a symbol for 'exists').
+- the character ```=``` (as a symbol for 'equal'), 
+- the characters ```!=``` (as a symbol for 'unequal'),
+- the character ```~``` (as a symbol for 'includes'), 
+- the characters ```!~``` (as a symbol for 'not includes') or
+- the character ```!``` (as a symbol for 'not exists').
+- the character ```?``` (as a symbol for 'exists').
 
 ```
 operator = "=" / "!=" / "~" / "!~" / "!" / "?"
 ```
  
-A **subTerm** is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A **comparisonString** can be every combination of ASCII characters preceeded by the character "\". The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
+A __subTerm__ is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A __comparisonString__ can be every combination of ASCII characters preceeded by the character ```\```. The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
 ```
 comparisonString = "\" *VARCHAR
@@ -237,8 +221,13 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 1. A MARCspec without *subfield tags* or *character position or range* is a reference to all *data elements* of the field.
 2. For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
 3. For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
-4. For the character position or range the digit "0" is always a reference to the first character in the *leader* or *control field*.
-5. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+4. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+
+### Character position or range interpretation
+
+1. The *character postion* ```#``` is always a reference to the last character in the *data content*.
+2. For character range, if the *positive integer* used for the character starting position is greater than the *positive integer* used for the character ending position, the current spec MUST NOT reference any data.
+3. For character range, if the character ```#``` is used for the character starting postion, the character indizes MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
 
 ### SubSpec interpretation
 
@@ -246,60 +235,45 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 2. For encapsulted *subSpecs*, if one *subSpec* gets validated as false, the preceeding spec doesn't get referenced (AND).
 3. For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
-5. If the left hand *subTerm* is omitted, as a shortcut for the operator "=", the operator can also be omitted. 
+5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```=```, the operator can also be omitted. 
 
 ### SubSpec validation
 
 *SubSpecs* get validated by the following rules:
 
-A *subSpec* is **true**, if
+A *subSpec* is __true__, if
 
-* with the operator "=" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+- with the operator ```=``` one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+- with the operator ```!=``` none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+- with the operator ```~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+- with the operator ```!~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+- with the operator ```?``` by the right hand *subTerm* referenced data exists.
+- with the operator ```!``` by the right hand *subTerm* no referenced data exists.
+- one of the repeated *subSpecs* are validated as true (OR).
+- all of the encapsulted *subSpecs* are validated as true (AND).
 
-* with the operator "!=" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+A *subSpec* is __false__, if
 
-* with the operator "~" one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-
-* with the operator "!~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
- 
-* with the operator "?" by the right hand *subTerm* referenced data exists.
-
-* with the operator "!" by the right hand *subTerm* no referenced data exists.
-
-* one of the repeated *subSpecs* are validated as true (OR).
-
-* all of the encapsulted *subSpecs* are validated as true (AND).
-
-A *subSpec* is **false**, if
-
-* the left hand *subTerm* does not reference any data (null).
-
-* with the operator "=" none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-
-* with the operator "!=" one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-
-* with the operator "~" none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-
-* with the operator "!~" one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-
-* with the operator "?" by the right hand *subTerm* no referenced data exists (null).
-
-* with the operator "!" by the right hand *subTerm* referenced data exists.
-
-* all of the repeated *subSpecs* are validated as false (OR).
-
-* one of the encapsulted *subSpecs* are validated as false (AND).
+- the left hand *subTerm* does not reference any data (null).
+- with the operator ```=``` none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+- with the operator ```!=``` one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
+- with the operator ```~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+- with the operator ```!~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
+- with the operator ```?``` by the right hand *subTerm* no referenced data exists (null).
+- with the operator ```!``` by the right hand *subTerm* referenced data exists.
+- all of the repeated *subSpecs* are validated as false (OR).
+- one of the encapsulted *subSpecs* are validated as false (AND).
 
 ### SubSpec validation table
 
 | operator  | right is null | left equals right | right is subpart of left | left is subpart of right | other |
 |:---------:|:-------------:|:-----------------:|:------------------------:|:------------------------:|:-----:|
-|**=**      |false          |true               |false                     |false                     |false  |
-|**!=**     |true           |false              |true                      |true                      |true   |
-|**~**      |false          |true               |true                      |false                     |false  |
-|**!~**     |true           |false              |false                     |true                      |true   |
-|**!**      |true           |false              |false                     |false                     |false  |
-|**?**      |false          |true               |true                      |true                      |true   |
+|__=__      |false          |true               |false                     |false                     |false  |
+|__!=__     |true           |false              |true                      |true                      |true   |
+|__~__      |false          |true               |true                      |false                     |false  |
+|__!~__     |true           |false              |false                     |true                      |true   |
+|__?__      |false          |true               |true                      |true                      |true   |
+|__!__      |true           |false              |false                     |false                     |false  |
 
 # Definition of MARC related terms used in this spec
 
@@ -309,35 +283,35 @@ MARCspec does not redefine terms already used by the [Network Development and MA
 
 | term                          | definition   |
 |-------------------------------|--------------|
-|**character position or range**|The position or range of positions of characters in *control fields* and *leader*. The first charater has always the position *0*.|
-|**content designation**        |The codes and conventions established explicitly by MARC 21 to identify and further characterize the *data elements* within a record and to support the manipulation of that data.|
-|**content of field**           |see *field content*|
-|**control field**              |A *variable field* containing information useful or required for the processing of the record. Control fields are assigned *tags* beginning with two zeroes. Control fields with fixed length data elements are restricted to ASCII graphics.|
-|**data content**               |see *data element value*|
-|**data element**               |A defined unit of information|
-|**data element identifier**    |A one-character code used to identify individual *data elements* within a *variable field*. The *data element* may be any ASCII lowercase alphabetic, numeric, or graphic symbol except blank.|
-|**data element value**         |The value of a *data element* in a *data field*.|
-|**data field**                 |A *variable field* containing bibliographic or other data. Data fields are assigned *tags* beginning with characters other than two zeroes. Data fields contain data in any MARC 21 character set unless a field-specific restriction applies.|
-|**data in field**              |see *field content*|
-|**delimiter**                  |ASCII control character 1F(hex) (represented graphically in MARC 21 documentation as ASCII control character 1F (hex) or $), which is combined with a *data element identifier* to make up the *subfield code* which precedes each individual *data element* within a variable field. The ASCII name for the delimiter is unit separator (US).|
-|**field**                      |A defined character string that may contain one or more *data elements*.|
-|**field content**              |All *data elements* in a field without *indicators*. See also *field data*.|
-|**field data**                 |All *data elements* in a field including *indicators*.|
-|**field index**                |see *index*|
-|**field tag**                  |see *tag*|
-|**fixed field**                |A *field* whose length does not vary. The term is occasionally used to refer to *variable control fields*, especially those that contain coded data such as fields 007 or 008.|
-|**index**                      |The count of repeatable *fields* and *subfields*. The first *field* in a list of repeatable *fields* or the first *subfield* in a list of repeatable *subfields* has always the index *0*.|
-|**indicator**                  |A *data element* associated with a *data field* that supplies additional information about the field. An indicator may be any ASCII lowercase alphabetic, numeric, or blank. Indicators are not used in *control fields*.|
-|**leader**                     |A *fixed field* that occurs at the beginning of each record and provides information for the processing of the record.|
-|**set of data**                |A set of *data elements* referenced by a MARCspec.|
-|**subfield**                   |A *data element* including its *subfield code*. It's identified by a *data element identifier* within a *variable field*.|
-|**subfield code**              |The two-character combination of a *delimiter* followed by a *data element identifier*. Subfield codes are not used in *control fields*.|
-|**subfield index**             |see *index*|
-|**subfield tag**               |see *data element identifier*|
-|**tag**                        |A three character string used to identify or label an associated *field*. The tag may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both).|
-|**variable control field**     |see *control field*|
-|**variable data field**        |see *data field*|
-|**variable field**             |A *field* whose length is determined for each occurrence by the length of data comprising that occurrence. There are two types of variable fields *control fields* and *data fields*.|
+|__character position or range__|The position or range of positions of characters in *control fields* and *leader*. The first charater has always the position *0*.|
+|__content designation__        |The codes and conventions established explicitly by MARC 21 to identify and further characterize the *data elements* within a record and to support the manipulation of that data.|
+|__content of field__           |see *field content*|
+|__control field__              |A *variable field* containing information useful or required for the processing of the record. Control fields are assigned *tags* beginning with two zeroes. Control fields with fixed length data elements are restricted to ASCII graphics.|
+|__data content__               |see *data element value*|
+|__data element__               |A defined unit of information|
+|__data element identifier__    |A one-character code used to identify individual *data elements* within a *variable field*. The *data element* may be any ASCII lowercase alphabetic, numeric, or graphic symbol except blank.|
+|__data element value__         |The value of a *data element* in a *data field*.|
+|__data field__                 |A *variable field* containing bibliographic or other data. Data fields are assigned *tags* beginning with characters other than two zeroes. Data fields contain data in any MARC 21 character set unless a field-specific restriction applies.|
+|__data in field__              |see *field content*|
+|__delimiter__                  |ASCII control character 1F(hex) (represented graphically in MARC 21 documentation as ASCII control character 1F (hex) or $), which is combined with a *data element identifier* to make up the *subfield code* which precedes each individual *data element* within a variable field. The ASCII name for the delimiter is unit separator (US).|
+|__field__                      |A defined character string that may contain one or more *data elements*.|
+|__field content__              |All *data elements* in a field without *indicators*. See also *field data*.|
+|__field data__                 |All *data elements* in a field including *indicators*.|
+|__field index__                |see *index*|
+|__field tag__                  |see *tag*|
+|__fixed field__                |A *field* whose length does not vary. The term is occasionally used to refer to *variable control fields*, especially those that contain coded data such as fields 007 or 008.|
+|__index__                      |The count of repeatable *fields* and *subfields*. The first *field* in a list of repeatable *fields* or the first *subfield* in a list of repeatable *subfields* has always the index *0*.|
+|__indicator__                  |A *data element* associated with a *data field* that supplies additional information about the field. An indicator may be any ASCII lowercase alphabetic, numeric, or blank. Indicators are not used in *control fields*.|
+|__leader__                     |A *fixed field* that occurs at the beginning of each record and provides information for the processing of the record.|
+|__set of data__                |A set of *data elements* referenced by a MARCspec.|
+|__subfield__                   |A *data element* including its *subfield code*. It's identified by a *data element identifier* within a *variable field*.|
+|__subfield code__              |The two-character combination of a *delimiter* followed by a *data element identifier*. Subfield codes are not used in *control fields*.|
+|__subfield index__             |see *index*|
+|__subfield tag__               |see *data element identifier*|
+|__tag__                        |A three character string used to identify or label an associated *field*. The tag may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both).|
+|__variable control field__     |see *control field*|
+|__variable data field__        |see *data field*|
+|__variable field__             |A *field* whose length is determined for each occurrence by the length of data comprising that occurrence. There are two types of variable fields *control fields* and *data fields*.|
 
 # Examples
 
@@ -422,19 +396,19 @@ Reference to data in the control field 007 at character position 0 (1 character)
 Reference to all data but the first character in the control field "007".
 
 ```
-007/1-
+007/1-#
 ```
 
 Reference to the last character in the control field "007".
 
 ```
-007/-
+007/#
 ```
 
-Reference to the last character of the value of the subfield "a" of field "245".
+Reference to the last two characters of the value of the subfield "a" of field "245".
 
 ```
-245$a/-
+245$a/#-1
 ```
 
 ## Reference to data content examples
@@ -480,7 +454,13 @@ Reference to the value of the first subfield "a" of the field "300"
 Reference to the value of the last subfield "a" of the field "300"
 
 ```
-300$a[-]
+300$a[#]
+```
+
+Reference to the value of the last two repetitions of subfield "a" of the field "300"
+
+```
+300$a[#-1]
 ```
 
 
@@ -590,20 +570,20 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 
 ## Normative references
 
-* [RFC 2119]
-* [RFC 5234]
-* [ISO 2709]
+- [RFC 2119]
+- [RFC 5234]
+- [ISO 2709]
 
 ## Informative references
 
-* [MARC]
-* [MARC 21 Principles]
-* [RECORD STRUCTURE]
-* [marcspec]
-* [solrmarc]
-* [catmandu]
-* [easyM2R]
-* [Network Development and MARC Standards Office]
+- [MARC]
+- [MARC 21 Principles]
+- [RECORD STRUCTURE]
+- [marcspec]
+- [solrmarc]
+- [catmandu]
+- [easyM2R]
+- [Network Development and MARC Standards Office]
 
 
 ## Revision history
