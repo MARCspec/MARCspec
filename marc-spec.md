@@ -61,9 +61,9 @@ alphaupper               = %x41-5A
                                 ; A-Z
 alphalower               = %x61-7A
                                 ; a-z
-positiveDigit             = %x31-39
+positiveDigit            = %x31-39
                                 ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
-positiveInteger           = "0" / positiveDigit [1*DIGIT]
+positiveInteger          = "0" / positiveDigit [1*DIGIT]
 indicator                = alphalower / DIGIT
 indicator1               = indicator
 indicator2               = indicator
