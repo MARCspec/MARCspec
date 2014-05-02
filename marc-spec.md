@@ -81,10 +81,10 @@ subfieldTagRange         = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT)
 index                    = "[" characterPositionOrRange "]"
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 comparisonString         = "\" *VARCHAR
-operator                 = "=" / "^" / "~" / "?"
+operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
                                 ; equal / unequal / includes / exists
 subTerm                  = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
-subSpec                  = "{" [subTerm] operator subTerm "}"
+subSpec                  = "{" [ [subTerm] operator ] subTerm "}"
 subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
 fieldSpec                = fieldTag [index] *subSpec
 MARCspec                 = fieldSpec [ characterSpec / subfieldSpec ]
@@ -125,7 +125,7 @@ A __character position or range__ is either a *character postion* or a *characte
 
 The __character postion__ is either a *positive integer* or the character ```#``` as a symbol for the last character of the referenced *data content*. 
 
-The __character range__ consists of two *character positions* joined with the character ```-```. 
+The __character range__ consists of two *character positions* concatenated with the character ```-```. 
 
 ```
 positiveDigit            = %x31-39
@@ -197,8 +197,8 @@ The __operator__ is either
 - the character ```=``` (as a symbol for 'equal'), 
 - the characters ```!=``` (as a symbol for 'unequal'),
 - the character ```~``` (as a symbol for 'includes'), 
-- the characters ```!~``` (as a symbol for 'not includes') or
-- the character ```!``` (as a symbol for 'not exists').
+- the characters ```!~``` (as a symbol for 'not includes')
+- the character ```!``` (as a symbol for 'not exists') or
 - the character ```?``` (as a symbol for 'exists').
 
 ```
@@ -556,7 +556,7 @@ or
 Reference data content of subfield "z" of field "020", if subfield "a" of field "020" does not exist.
 
 ```
-020$z{^$a}
+020$z{!$a}
 ```
 
 ---
