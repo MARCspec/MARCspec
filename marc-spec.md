@@ -26,7 +26,7 @@ The *data* of the MARC record being referenced may be represented through a *set
 
 # Limitations of MARCspec as string
 
-A MARCspec might not fulfill all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, especially when it comes to delimiters based on cataloging rules. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools having implemented MARCspec.
+A MARCspec might not fulfil all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, especially when it comes to delimiters based on cataloging rules. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools having implemented MARCspec.
 
 To enable support for other [ISO 2709] applications MARCspecs syntax does not distinguish between types of fields like in the [MARC] record structure. A valid MARCspec might violate the MARC record structure. It is led to the MARCspec aware tools wheater to check for MARC record structure violation or not. 
 
@@ -36,12 +36,12 @@ A MARCspec as string should cope the following basic references:
 
 - Reference to *field data* of *fields* by *field tag*
 - Reference to *field data* of one or more repetitions of a *field* by *field index* or field index range
-- Reference to *field data* of *varibale fields* within the context of *indicators*
+- Reference to *field data* of *variable fields* within the context of *indicators*
 - Reference to substring of *field content* in *fields* by *character position or range*
 - Reference to *data content* in *variable fields* by *subfield tags*
 - Reference to *data content* of one or more repetitions of a *subfield* by *subfield index* or subfield index range
 - Reference to substring of *data content* in *subfields* by *character position or range*
-- Reference to *data content* wthin the context of other *data content* (__new__)
+- Reference to *data content* within the context of other *data content* (__new__)
 
 References a MARCspec as string does not cope
 
@@ -79,28 +79,28 @@ subfieldTag              = "$" subfieldChar
 subfieldTagRange         = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                                 ; [a-z]-[a-z] / [0-9]-[0-9]
 index                    = "[" characterPositionOrRange "]"
+fieldSpec                = fieldTag [index]
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
+subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
+MARCspec                 = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec subfieldSpec) )
 comparisonString         = "\" *VARCHAR
 operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
-                                ; equal / unequal / includes / exists
-subTerm                  = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
+                                ; equal / unequal / includes / not includes / not exists / exists
+subTerm                  = MARCspec / fieldTag / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
 subSpec                  = "{" [ [subTerm] operator ] subTerm "}"
-subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
-fieldSpec                = fieldTag [index] *subSpec
-MARCspec                 = fieldSpec [ characterSpec / subfieldSpec ]
 ``` 
 
 ### General form
 
-Every __MARCspec__ consists of one fieldSpec either followed optionally by a characterSpec (see section [Reference to substring]) or a subfieldSpec (see section [Reference to data content]).
+Every __MARCspec__ consists of one fieldSpec and other optional rules, all explained below.
 
 ```
-MARCspec = fieldSpec [ characterSpec / subfieldSpec ]
+MARCspec = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec subfieldSpec) )
 ```
 
 ### Reference to field data
 
-A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag* (fieldTag), followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
+A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag*, followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
 
 The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
 
@@ -110,7 +110,7 @@ The special *field tag* ```LDR``` is the *field tag* for the *leader*.
 alphaupper = %x41-5A ; A-Z
 alphalower = %x61-7A; a-z
 fieldTag   = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-fieldSpec  = fieldTag [index] *subSpec
+fieldSpec  = fieldTag [index]
 ``` 
 
 ### Reference to substring
@@ -136,7 +136,7 @@ characterRange           = characterPosition "-" characterPosition
 characterPositionOrRange = characterPosition / characterRange
 ```
 
-Interpreation of a *character range* differs through the position of the special *character position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
+Interpretation of a *character range* differs through the position of the special *character position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
 
 ### Reference to data content
 
@@ -148,9 +148,9 @@ subfieldSpec = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subf
 
 A __subfieldTagSpec__ consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
 
-A __subfieldTag__ is a *subfieldChar* preceeded by the character ```$```.
+A __subfieldTag__ is a *subfieldChar* preceded by the character ```$```.
 
-A __subfieldTagRange__ is preceeded by the character ```$``` and restricted to either two alphabetic or two numeric characters both concatenated with the character ```-```.
+A __subfieldTagRange__ is preceded by the character ```$``` and restricted to either two alphabetic or two numeric characters both concatenated with the character ```-```.
 
 A __subfieldChar__ is a lowercase alphabetic, a numeric character or a special character.
 
@@ -184,32 +184,42 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 #### SubSpecs
 
-With a __subSpec__ the preceeding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceeding spec gets referenced. Is a subSpec false, the preceeding spec doesn't get referenced.
+With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceding spec gets referenced. Is a subSpec false, the preceding spec doesn't get referenced.
 
-A *subSpec* is enclosed with the characters ```{``` and ```}```. The __left hand subTerm__ and the __right hand subTerm__ MUST be concatenated with an __operator__. By omitting the *left hand subTerm*, this implicitly makes the preceeding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?```. 
+A *subSpec* is enclosed with the characters ```{``` and ```}```. The __left hand subTerm__ and the __right hand subTerm__ MUST be concatenated with an __operator__. By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?```. 
 
 ```
 subSpec = "{" [ [subTerm] operator ] subTerm "}"
 ```
 
-The __operator__ is either
+The __operator__ is one of
 
-- the character ```=``` (as a symbol for 'equal'), 
-- the characters ```!=``` (as a symbol for 'unequal'),
-- the character ```~``` (as a symbol for 'includes'), 
-- the characters ```!~``` (as a symbol for 'not includes')
-- the character ```!``` (as a symbol for 'not exists') or
-- the character ```?``` (as a symbol for 'exists').
+- ```=``` (as a symbol for 'equal'), 
+- ```!=``` (as a symbol for 'unequal'),
+- ```~``` (as a symbol for 'includes'), 
+- ```!~``` (as a symbol for 'not includes')
+- ```!``` (as a symbol for 'not exists') or
+- ```?``` (as a symbol for 'exists').
 
 ```
 operator = "=" / "!=" / "~" / "!~" / "!" / "?"
 ```
  
-A __subTerm__ is either a *characterSpec*, one or more *subfieldTagSpecs* or a *comparisonString*. A __comparisonString__ can be every combination of ASCII characters preceeded by the character ```\```. The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
+A __subTerm__ is one of
+
+- *MARCspec*
+- *fieldTag*
+- *index*
+- *characterSpec*
+- *subSpec* (one or more)
+- *subfieldTagSpec* (one or more)
+- *comparisonString*.
+
+A __comparisonString__ can be every combination of ASCII characters preceeded by the character ```\```. The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
 ```
 comparisonString = "\" *VARCHAR
-subTerm          = ( [fieldTag] ( characterSpec / 1*subfieldTagSpec ) *subSpec ) / comparisonString
+subTerm          = MARCspec / fieldTag / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
 ```
 
 ## MARCspec interpretation
@@ -227,12 +237,12 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 1. The *character postion* ```#``` is always a reference to the last character in the *data content*.
 2. For character range, if the *positive integer* used for the character starting position is greater than the *positive integer* used for the character ending position, the current spec MUST NOT reference any data.
-3. For character range, if the character ```#``` is used for the character starting postion, the character indizes MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
+3. For character range, if the character ```#``` is used for the character starting position, the character indices MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
 
 ### SubSpec interpretation
 
-1. For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceeding spec gets referenced (OR).
-2. For encapsulted *subSpecs*, if one *subSpec* gets validated as false, the preceeding spec doesn't get referenced (AND).
+1. For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceding spec gets referenced (OR).
+2. For encapsulated *subSpecs*, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
 3. For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
 5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```=```, the operator can also be omitted. 
@@ -250,7 +260,7 @@ A *subSpec* is __true__, if
 - with the operator ```?``` by the right hand *subTerm* referenced data exists.
 - with the operator ```!``` by the right hand *subTerm* no referenced data exists.
 - one of the repeated *subSpecs* are validated as true (OR).
-- all of the encapsulted *subSpecs* are validated as true (AND).
+- all of the encapsulated *subSpecs* are validated as true (AND).
 
 A *subSpec* is __false__, if
 
@@ -262,7 +272,7 @@ A *subSpec* is __false__, if
 - with the operator ```?``` by the right hand *subTerm* no referenced data exists (null).
 - with the operator ```!``` by the right hand *subTerm* referenced data exists.
 - all of the repeated *subSpecs* are validated as false (OR).
-- one of the encapsulted *subSpecs* are validated as false (AND).
+- one of the encapsulated *subSpecs* are validated as false (AND).
 
 ### SubSpec validation table
 
@@ -335,7 +345,7 @@ Reference to all *field data* of fields having a field tag starting with *7*.
 7..
 ```
 
-Reference to *data elements* of all repetions of the "100" field.
+Reference to *data elements* of all repetitions of the "100" field.
 
 ```
 100
@@ -364,13 +374,19 @@ Reference to the first, second and third of the "300" field.
 Reference to all but the first of the "300" field.
 
 ```
-300[1-]
+300[1-#]
 ```
 
 Reference to the last of the "300" field.
 
 ```
-300[-]
+300[#]
+```
+
+Reference to the last two of the "300" field.
+
+```
+300[#-1]
 ```
 
 ## Reference to substring examples
@@ -560,10 +576,6 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 ```
 
 ---
-
-
-
-
 
 
 # References
