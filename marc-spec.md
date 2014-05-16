@@ -86,7 +86,7 @@ MARCspec                 = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec su
 comparisonString         = "\" *VARCHAR
 operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
                                 ; equal / unequal / includes / not includes / not exists / exists
-subTerm                  = MARCspec / fieldTag / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
+subTerm                  = MARCspec / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
 subSpec                  = "{" [ [subTerm] operator ] subTerm "}"
 ``` 
 
@@ -208,7 +208,6 @@ operator = "=" / "!=" / "~" / "!~" / "!" / "?"
 A __subTerm__ is one of
 
 - *MARCspec*
-- *fieldTag*
 - *index*
 - *characterSpec*
 - *subSpec* (one or more)
@@ -219,7 +218,7 @@ A __comparisonString__ can be every combination of ASCII characters preceeded by
 
 ```
 comparisonString = "\" *VARCHAR
-subTerm          = MARCspec / fieldTag / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
+subTerm          = MARCspec / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
 ```
 
 ## MARCspec interpretation
