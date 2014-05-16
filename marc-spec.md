@@ -83,7 +83,7 @@ fieldSpec                = fieldTag [index]
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
 MARCspec                 = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec subfieldSpec) )
-comparisonString         = "\" *VARCHAR
+comparisonString         = "\" *VARCHAR "\"
 operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
                                 ; equal / unequal / includes / not includes / not exists / exists
 subTerm                  = MARCspec / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
@@ -173,7 +173,7 @@ index = "[" characterPositionOrRange "]"
 
 #### Indicators
 
-__Indicators__ only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceeded by the character ```_```. There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
+__Indicators__ only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceded by the character ```_```. There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
 
 ```
 indicator  = alphalower / DIGIT
@@ -214,10 +214,10 @@ A __subTerm__ is one of
 - *subfieldTagSpec* (one or more)
 - *comparisonString*.
 
-A __comparisonString__ can be every combination of ASCII characters preceeded by the character ```\```. The *characterSpec* or the *subfieldTagSpec* is optionally preceeded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
+A __comparisonString__ can be every combination of ASCII characters enclosed within two ```\``` characters. The *characterSpec* or the *subfieldTagSpec* is optionally preceded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
 ```
-comparisonString = "\" *VARCHAR
+comparisonString = "\" *VARCHAR "\"
 subTerm          = MARCspec / index / characterSpec / 1*subSpec / 1*subfieldTagSpec / comparisonString
 ```
 
@@ -516,7 +516,7 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 ###Checking dependencies via string comparison
 
 ```
-245$b{LDR/06=\t}
+245$b{LDR/06=\t\}
 ```
 
 ---
@@ -526,7 +526,7 @@ If Leader/06 = t: Books
 Reference to character with position '18' of field '008', if character with position '06' in Leader equals 't'.
 
 ```
-008/18{LDR/06=\t}
+008/18{LDR/06=\t\}
 ```
 
 ---
@@ -536,7 +536,7 @@ If Leader/06 = a and Leader/07 = a, c, d, or m: Books
 Reference to character with position '18' of field '008', if character with position '06' in Leader equals 'a' AND character with position '07' in Leader equals 'a', 'c', 'd' OR 'm'.
 
 ```
-008/18{LDR/06=\a{LDR/07=\a}{LDR/07=\c}{LDR/07=\d}{LDR/07=\m}}
+008/18{LDR/06=\a\{LDR/07=\a\}{LDR/07=\c\}{LDR/07=\d\}{LDR/07=\m\}}
 ```
 
 ---
@@ -549,7 +549,7 @@ Example data:
 Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (characters with index range 3-5) and the string "880".
 
 ```
-880$a{100_1$6~880$6/3-5{100_1$6~\880}}
+880$a{100_1$6~880$6/3-5{100_1$6~\880\}}
 ```
 
 ---
