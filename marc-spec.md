@@ -69,20 +69,20 @@ indicator1               = indicator
 indicator2               = indicator
 indicators               = "_" (indicator1 / "_") [indicator2 / "_"]
 fieldTag                 = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-characterPosition        = positivInteger / "#"
-characterRange           = characterPosition "-" characterPosition
-characterPositionOrRange = characterPosition / characterRange
-characterSpec            = "/" characterPositionOrRange
+position                 = positivInteger / "#"
+range                    = position "-" position
+positionOrRange          = position / range
+characterSpec            = "/" positionOrRange
 subfieldChar             = %x21-3F / %x5B-7B / %x7D-7E
                                 ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
 subfieldTag              = "$" subfieldChar
 subfieldTagRange         = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                                 ; [a-z]-[a-z] / [0-9]-[0-9]
-index                    = "[" characterPositionOrRange "]"
-fieldSpec                = fieldTag [index]
+index                    = "[" positionOrRange "]"
+fieldSpec                = fieldTag [index] [characterSpec] [indicators] *subSpec
 subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
-subfieldSpec             = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
-MARCspec                 = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec subfieldSpec) )
+subfieldSpec             = 1*subfieldTagSpec *subSpec
+MARCspec                 = fieldSpec [subfieldSpec]
 comparisonString         = "\" *VARCHAR
 operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
                                 ; equal / unequal / includes / not includes / not exists / exists
@@ -92,15 +92,20 @@ subSpec                  = "{" [ [subTerm] operator ] subTerm "}"
 
 ### General form
 
-Every __MARCspec__ consists of one fieldSpec and other optional rules, all explained below.
+Every __MARCspec__ consists of one *fieldSpec* and optionally a *subfieldSpec*.
 
 ```
-MARCspec = fieldSpec ( ([characterSpec] *subSpec) / (*subSpec subfieldSpec) )
+MARCspec = fieldSpec [subfieldSpec]
 ```
 
 ### Reference to field data
 
-A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag*, followed optionally by an *index* (see section [Reference to repetitions]), followed optionally by an subSpec (see section [Reference to contextualized data]).
+A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag*, followed optionally
+
+- by an *index* (see section [Reference to repetitions]),
+- by an *characterSpec* (see section [Reference to substring]),
+- by *indicators* (see section [Reference to data content]) and 
+- by an *subSpec* (see section [Subspecs]).
 
 The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
 
@@ -110,40 +115,40 @@ The special *field tag* ```LDR``` is the *field tag* for the *leader*.
 alphaupper = %x41-5A ; A-Z
 alphalower = %x61-7A; a-z
 fieldTag   = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-fieldSpec  = fieldTag [index]
+fieldSpec  = fieldTag [index] [characterSpec] [indicators] *subSpec
 ``` 
 
 ### Reference to substring
 
-A __characterSpec__ is a reference to a character or a range of characters within a *field* or *subfield*. It consists of the *character position or range* prefixed with the character ```/```.
+A __characterSpec__ is a reference to a character or a range of characters within a *field* or *subfield*. It consists of a *position or range* prefixed with the character ```/```.
 
 ```
-characterSpec = "/" characterPositionOrRange
+characterSpec = "/" positionOrRange
 ```
 
-A __character position or range__ is either a *character postion* or a *character range*.
+A __position or range__ is either a *postion* or a *range*.
 
-The __character postion__ is either a *positive integer* or the character ```#``` as a symbol for the last character of the referenced *data content*. 
+The __postion__ is either a *positive integer* or the character ```#``` as a symbol for the last character of the referenced *data content*. 
 
-The __character range__ consists of two *character positions* concatenated with the character ```-```. 
+The __range__ consists of two *positions* concatenated with the character ```-```. 
 
 ```
-positiveDigit            = %x31-39
-                                ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
-positiveInteger          = "0" / positiveDigit [1*DIGIT]
-characterPosition        = positivInteger / "#"
-characterRange           = characterPosition "-" characterPosition
-characterPositionOrRange = characterPosition / characterRange
+positiveDigit   = %x31-39
+                    ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+positiveInteger = "0" / positiveDigit [1*DIGIT]
+position        = positivInteger / "#"
+range           = position "-" position
+positionOrRange = position / range
 ```
 
-Interpretation of a *character range* differs through the position of the special *character position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
+Interpretation of a *range* differs through the position of the special *position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
 
 ### Reference to data content
 
-The __subfieldSpec__ is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed by one or more subSpecs (see section [SubSpecs]) and is either followed optionally by or preeceded by *indicators* (see section [Indicators]).
+The __subfieldSpec__ is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed optionally by one or more *subSpecs* (see section [SubSpecs]).
 
 ```
-subfieldSpec = ( 1*subfieldTagSpec *subSpec [indicators] ) / ( indicators 1*subfieldTagSpec *subSpec )
+subfieldSpec = 1*subfieldTagSpec *subSpec
 ```
 
 A __subfieldTagSpec__ consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
@@ -163,17 +168,17 @@ subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 
 ### Reference to repetitions
 
-For repeatable *fields* and *subfields* each repetition can be referenced by its __index__. An index has the same syntax as the *character position or range* but is enclosed with the characters ```[``` and ```]```. The first repetition of a *field* or  a *subfield* is always referenced with the index ```[0]```. The last repetition of a *field* or  a *subfield* is referenced with the index ```[#]```.
+For repeatable *fields* and *subfields* each repetition can be referenced by its __index__. An index is a *position or range* enclosed with the characters ```[``` and ```]```. The first repetition of a *field* or  a *subfield* is always referenced with the index ```[0]```. The last repetition of a *field* or  a *subfield* is referenced with the index ```[#]```.
 
 ```
-index = "[" characterPositionOrRange "]"
+index = "[" positionOrRange "]"
 ```
 
 ### Reference to contextualized data
 
 #### Indicators
 
-__Indicators__ only appear in the context of *subfieldSpecs* (see section [Reference to data content]) and are alwasy preceded by the character ```_```. There are two indicators: *indicator 1* and *indicator 2*. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
+__Indicators__ are preceded by the character ```_```. There are two indicators: __indicator 1__ and __indicator 2__. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
 
 ```
 indicator  = alphalower / DIGIT
@@ -184,7 +189,7 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 #### SubSpecs
 
-With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either true or false. Is a subSpec true, the preceding spec gets referenced. Is a subSpec false, the preceding spec doesn't get referenced.
+With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either __true__ or __false__. Is a subSpec true, the preceding spec gets referenced. Is a subSpec false, the preceding spec doesn't get referenced.
 
 A *subSpec* is enclosed with the characters ```{``` and ```}```. The __left hand subTerm__ and the __right hand subTerm__ MUST be concatenated with an __operator__. By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?```. 
 
@@ -213,7 +218,15 @@ A __subTerm__ is one of
 - *subfieldTagSpec* (one or more)
 - *comparisonString*.
 
-A __comparisonString__ can be every combination of ASCII characters preceded by the ```\``` character. For unambiguousness in a *comparisonString* the characters ```\```, ```{``` and ```}``` MUST be escaped by the character ```\```.
+A __comparisonString__ can be every combination of ASCII characters preceded by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
+
+- ```\```
+- ```{```
+- ```}```
+- ```!```
+- ```=```
+- ```~```
+- ```?```
 
 The *characterSpec* or the *subfieldTagSpec* is optionally preceded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
@@ -228,14 +241,14 @@ subTerm          = MARCspec / index / characterSpec / 1*subfieldTagSpec / compar
 
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
-1. A MARCspec without *subfield tags* or *character position or range* is a reference to all *data elements* of the field.
+1. A MARCspec without *subfield tags* or *position or range* is a reference to all *data elements* of the field.
 2. For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
 3. For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
 4. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
 ### Character position or range interpretation
 
-1. The *character postion* ```#``` is always a reference to the last character in the *data content*.
+1. The *postion* character ```#``` is always a reference to the last character in the *data content*.
 2. For character range, if the *positive integer* used for the character starting position is greater than the *positive integer* used for the character ending position, the current spec MUST NOT reference any data.
 3. For character range, if the character ```#``` is used for the character starting position, the character indices MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
 
@@ -293,7 +306,7 @@ MARCspec does not redefine terms already used by the [Network Development and MA
 
 | term                          | definition   |
 |-------------------------------|--------------|
-|__character position or range__|The position or range of positions of characters in *control fields* and *leader*. The first charater has always the position *0*.|
+|__characterSpec__              |The position or range of positions of characters in *control fields* and *leader*. The first charater has always the position *0*.|
 |__content designation__        |The codes and conventions established explicitly by MARC 21 to identify and further characterize the *data elements* within a record and to support the manipulation of that data.|
 |__content of field__           |see *field content*|
 |__control field__              |A *variable field* containing information useful or required for the processing of the record. Control fields are assigned *tags* beginning with two zeroes. Control fields with fixed length data elements are restricted to ASCII graphics.|
@@ -485,14 +498,6 @@ Reference to the value of the last two repetitions of subfield "a" of the field 
 Reference to *data content* in the subfield "a" within the context of *indicator 1* with the value "1".
 
 ```
-245$a_1
-
-or
-
-245$a_1_
-
-or
-
 245_1$a
 
 or
@@ -503,13 +508,13 @@ or
 Reference to the value of the subfield "a" within the context of *indicator 1* with the value "1" and *indicator 2* with the value "0".
 
 ```
-245$a_10
+245_10$a
 ```
 
 Reference to the value of the subfield "a" within the context of *indicator 2* with the value "0".
 
 ```
-245$a__0
+245__0$a
 ```
 
 ## Reference to contextualized data with subSpecs examples
