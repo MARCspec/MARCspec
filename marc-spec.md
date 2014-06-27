@@ -57,37 +57,38 @@ The __Augmented BNF for Syntax Specifications: ABNF__ [RFC 5234] is used to defi
 The whole ABNF for MARCspec shows as follows
 
 ```
-alphaupper               = %x41-5A
-                                ; A-Z
-alphalower               = %x61-7A
-                                ; a-z
-positiveDigit            = %x31-39
-                                ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
-positiveInteger          = "0" / positiveDigit [1*DIGIT]
-indicator                = alphalower / DIGIT
-indicator1               = indicator
-indicator2               = indicator
-indicators               = "_" (indicator1 / "_") [indicator2 / "_"]
-fieldTag                 = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-position                 = positivInteger / "#"
-range                    = position "-" position
-positionOrRange          = position / range
-characterSpec            = "/" positionOrRange
-subfieldChar             = %x21-3F / %x5B-7B / %x7D-7E
-                                ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
-subfieldTag              = "$" subfieldChar
-subfieldTagRange         = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
-                                ; [a-z]-[a-z] / [0-9]-[0-9]
-index                    = "[" positionOrRange "]"
-fieldSpec                = fieldTag [index] [characterSpec] [indicators] *subSpec
-subfieldTagSpec          = (subfieldTag / subfieldTagRange) [index] [characterSpec]
-subfieldSpec             = 1*subfieldTagSpec *subSpec
-MARCspec                 = fieldSpec [subfieldSpec]
-comparisonString         = "\" *VARCHAR
-operator                 = "=" / "!=" / "~" / "!~" / "!" / "?"
-                                ; equal / unequal / includes / not includes / not exists / exists
-subTerm                  = MARCspec / index / characterSpec / 1*subfieldTagSpec / comparisonString
-subSpec                  = "{" [ [subTerm] operator ] subTerm "}"
+alphaupper       = %x41-5A
+                    ; A-Z
+alphalower       = %x61-7A
+                   ; a-z
+positiveDigit    = %x31-39
+                    ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
+positiveInteger  = "0" / positiveDigit [1*DIGIT]
+indicator        = alphalower / DIGIT
+indicator1       = indicator
+indicator2       = indicator
+indicators       = "_" (indicator1 / "_") [indicator2 / "_"]
+fieldTag         = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
+position         = positivInteger / "#"
+range            = position "-" position
+positionOrRange  = position / range
+characterSpec    = "/" positionOrRange
+subfieldChar     = %x21-3F / %x5B-7B / %x7D-7E
+                    ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
+subfieldTag      = "$" subfieldChar
+subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
+                    ; [a-z]-[a-z] / [0-9]-[0-9]
+index            = "[" positionOrRange "]"
+fieldSpec        = fieldTag [index] [characterSpec] [indicators] *subSpec
+subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
+subfieldSpec     = 1*subfieldTagSpec *subSpec
+MARCspec         = fieldSpec [subfieldSpec]
+comparisonString = "\" *VARCHAR
+operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
+                    ; equal / unequal / includes / not includes / not exists / exists
+subTerm          = MARCspec / index / characterSpec / 1*subfieldTagSpec / comparisonString
+subTerms         = [ [subTerm] operator ] subTerm
+subSpec          = "{" subTerms *( "|" subTerms ) "}"
 ``` 
 
 ### General form
@@ -105,9 +106,9 @@ A __fieldSpec__ is a reference to *field data* of a field. It consists of the th
 - by an *index* (see section [Reference to repetitions]),
 - by an *characterSpec* (see section [Reference to substring]),
 - by *indicators* (see section [Reference to data content]) and 
-- by an *subSpec* (see section [Subspecs]).
+- by an *subSpec* (see section [SubSpecs]).
 
-The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. '3..' is then a reference to the *data elements* in all *fields* beginning with '3'. 
+The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. "3.." is then a reference to the *data elements* in all *fields* beginning with "3". 
 
 The special *field tag* ```LDR``` is the *field tag* for the *leader*. 
 
@@ -189,22 +190,25 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 #### SubSpecs
 
-With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either __true__ or __false__. Is a subSpec true, the preceding spec gets referenced. Is a subSpec false, the preceding spec doesn't get referenced.
+With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either __true__ or __false__. Is a subSpec true, the preceding spec is used to reference data. Is a subSpec false, the preceding spec doesn't get used.
 
-A *subSpec* is enclosed with the characters ```{``` and ```}```. The __left hand subTerm__ and the __right hand subTerm__ MUST be concatenated with an __operator__. By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?```. 
+A *subSpec* is enclosed with the characters ```{``` and ```}```. A *subSpec* consists of a set of *subTerms* (the __left hand subTerm__ and the __right hand subTerm__) and an *operator*. This combination of *subTerms* and an *operator* can be *chained* through the character ```|``` (__OR__) within a *subSpec*. Multiple *subSpecs* can also be *repeated* one after another (__AND__).
+
+By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists). 
 
 ```
-subSpec = "{" [ [subTerm] operator ] subTerm "}"
+subTerms = [ [subTerm] operator ] subTerm
+subSpec  = "{" subTerms *( "|" subTerms ) "}"
 ```
 
 The __operator__ is one of
 
-- ```=``` (as a symbol for 'equal'), 
-- ```!=``` (as a symbol for 'unequal'),
-- ```~``` (as a symbol for 'includes'), 
-- ```!~``` (as a symbol for 'not includes')
-- ```!``` (as a symbol for 'not exists') or
-- ```?``` (as a symbol for 'exists').
+- ```=``` (as a symbol for "equal"), 
+- ```!=``` (as a symbol for "unequal"),
+- ```~``` (as a symbol for "includes"), 
+- ```!~``` (as a symbol for "not includes")
+- ```!``` (as a symbol for "not exists") or
+- ```?``` (as a symbol for "exists").
 
 ```
 operator = "=" / "!=" / "~" / "!~" / "!" / "?"
@@ -220,13 +224,14 @@ A __subTerm__ is one of
 
 A __comparisonString__ can be every combination of ASCII characters preceded by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
 
-- ```\```
 - ```{```
 - ```}```
 - ```!```
 - ```=```
 - ```~```
 - ```?```
+
+In a *comparisonString* a whitespace MUST be encoded as the character combination ```\s```.
 
 The *characterSpec* or the *subfieldTagSpec* is optionally preceded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
 
@@ -254,8 +259,8 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 ### SubSpec interpretation
 
-1. For repeatable *subSpecs*, if one *subSpec* gets validated as true, the preceding spec gets referenced (OR).
-2. For encapsulated *subSpecs*, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
+1. For __chained sets of subTerms__, if one *subTerm set* gets validated as true, the preceding spec gets referenced (OR) as log as all other *repeated SubSpecs* are validated as true.
+2. For __repeatable subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
 3. For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
 5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```=```, the operator can also be omitted. 
@@ -272,8 +277,8 @@ A *subSpec* is __true__, if
 - with the operator ```!~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 - with the operator ```?``` by the right hand *subTerm* referenced data exists.
 - with the operator ```!``` by the right hand *subTerm* no referenced data exists.
-- one of the repeated *subSpecs* are validated as true (OR).
-- all of the encapsulated *subSpecs* are validated as true (AND).
+- one of the *chained subTerm sets* is validated as true (OR) and all other *repeated subSpecs* are validated as true.
+- all of the *repeated subSpecs* are validated as true (AND).
 
 A *subSpec* is __false__, if
 
@@ -284,10 +289,10 @@ A *subSpec* is __false__, if
 - with the operator ```!~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 - with the operator ```?``` by the right hand *subTerm* no referenced data exists (null).
 - with the operator ```!``` by the right hand *subTerm* referenced data exists.
-- all of the repeated *subSpecs* are validated as false (OR).
-- one of the encapsulated *subSpecs* are validated as false (AND).
+- all of the *chained subTerm sets* are validated as false (OR).
+- one of the *repeated subSpecs* is validated as false (AND).
 
-### SubSpec validation table
+### SubTerm validation table
 
 | operator  | right is null | left equals right | right is subpart of left | left is subpart of right | other |
 |:---------:|:-------------:|:-----------------:|:------------------------:|:------------------------:|:-----:|
@@ -521,28 +526,32 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 
 ###Checking dependencies via string comparison
 
+If Leader/06 = t: Books
+
+Reference to character with position "18" of field "008", if character with position "06" in Leader equals "t".
+
 ```
-245$b{LDR/06=\t}
+008/18{LDR/6=\t}
 ```
 
 ---
 
-If Leader/06 = t: Books
+If Field 007/00 = a and t
 
-Reference to character with position '18' of field '008', if character with position '06' in Leader equals 't'.
+Reference to subfield "b" of field 245, if character with position "0" of field 007 equals "a" OR "t".
 
 ```
-008/18{LDR/06=\t}
+245$b{007/0=\a|007/0=\t}
 ```
 
 ---
 
 If Leader/06 = a and Leader/07 = a, c, d, or m: Books
 
-Reference to character with position '18' of field '008', if character with position '06' in Leader equals 'a' AND character with position '07' in Leader equals 'a', 'c', 'd' OR 'm'.
+Reference to character with position "18" of field "008", if character with position "06" in Leader equals "a" AND character with position "07" in Leader equals "a", "c", "d" OR "m".
 
 ```
-008/18{LDR/06=\a{LDR/07=\a}{LDR/07=\c}{LDR/07=\d}{LDR/07=\m}}
+008/18{LDR/6=\a}{LDR/7=\a|LDR/7=\c|LDR/7=\d|LDR/7=\m}
 ```
 
 ---
@@ -552,10 +561,10 @@ Example data:
 100  1#$6880-01$aZilbershtain, Yitshak ben David Yosef.<br>
 880  1#$6100-01/(2/r$a, יצחק יוסף בן דוד.
 
-Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (characters with index range 3-5) and the string "880".
+Reference data content of subfield "a" of field "880", if data content of subfield "6" of field "100" includes the string "-01" (characters with index range 3-5 of field "800") and the string "880".
 
 ```
-880$a{100_1$6~880$6/3-5{100_1$6~\880}}
+880$a{100_1$6~$6/3-5}{100_1$6~\880}
 ```
 
 ---
