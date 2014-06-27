@@ -230,6 +230,7 @@ A __comparisonString__ can be every combination of ASCII characters preceded by 
 - ```=```
 - ```~```
 - ```?```
+- ```|```
 
 In a *comparisonString* a whitespace MUST be encoded as the character combination ```\s```.
 
