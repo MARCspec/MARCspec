@@ -2,7 +2,7 @@
 
 Since it became a common task to map [MARC] data to arbitrary formats, these mappings are normally based on a set of definitions of MARC fields and subfields called *MARC field specification* or short *MARC spec*.
 
-There are already implementations of MARC specs in tools like [marcspec], [catmandu], [solrmarc] and [easyM2R]. Each of them using a different flavour of MARC spec. This document is an approach to normalize such field specifications.
+There are already implementations of *MARC specs* in tools like [marcspec], [catmandu], [solrmarc] and [easyM2R]. Each of them using a different flavour of *MARC spec*. This document is an approach to normalize such field specifications.
 
 The hereby described specification __MARCspec__ can help to build reusable MARCspec parsers and validators and facilitates the exchange of mapping definitions.
 
@@ -18,7 +18,7 @@ See also [Definition of MARC related terms used in this spec].
 
 ## What is a MARCspec?
 
-Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of fields, subfields and its contents. There are two kinds of MARC fields: *fixed fields* and *data fields*. The *field content* in the the *fixed fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
+Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of __fields__, __subfields__ and its __contents__. There are two kinds of MARC fields: *fixed fields* and *data fields*. The *field content* in the the *fixed fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
 
 __MARCspec__ is very much like XPath is for XML. With MARCspec one can reference data on different levels of a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*.
 
@@ -190,9 +190,9 @@ With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualiz
 A *subSpec* is enclosed with the characters ```{``` and ```}```. A *subSpec* consists of one or more sets of *subTerms* (the __left hand subTerm__ and the __right hand subTerm__) and an *operator*. This combination of *subTerms* and an *operator* can be *chained* through the character ```|``` (__OR__) within a *subSpec*. Multiple *subSpecs* can also be *repeated* one after another (__AND__).
 
 ```
-subTerm          = fieldSpec / subfieldSpec / comparisonString
-subTermSet       = [ [subTerm] operator ] subTerm
-subSpec          = "{" subTermSet *( "|" subTermSet ) "}"
+subTerm    = fieldSpec / subfieldSpec / comparisonString
+subTermSet = [ [subTerm] operator ] subTerm
+subSpec    = "{" subTermSet *( "|" subTermSet ) "}"
 ```
 
 The __operator__ is one of
@@ -278,24 +278,24 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 A *subSpec* is __true__, if
 
-- with the operator ```=``` one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-- with the operator ```!=``` none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-- with the operator ```~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-- with the operator ```!~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-- with the operator ```?``` by the right hand *subTerm* referenced data exists.
-- with the operator ```!``` by the right hand *subTerm* no referenced data exists.
+- with the operator ```=``` one of the referenced values of the *left hand subTerm* is equal to one of the referenced values of the *right hand subTerm*.
+- with the operator ```!=``` none of the referenced values of the *left hand subTerm* is equal to one of the referenced values of the *right hand subTerm*.
+- with the operator ```~``` one of the referenced values of the *left hand subTerm* includes one of the referenced values of the *right hand subTerm*.
+- with the operator ```!~``` none of the referenced values of the *left hand subTerm* includes one of the referenced values of the *right hand subTerm*.
+- with the operator ```?``` by the *right hand subTerm* referenced data exists.
+- with the operator ```!``` by the *right hand subTerm* no referenced data exists.
 - one of the *chained subTermSets* is validated as true (OR) and all other *repeated subSpecs* are validated as true.
 - all of the *repeated subSpecs* are validated as true (AND).
 
 A *subSpec* is __false__, if
 
 - the left hand *subTerm* does not reference any data (null).
-- with the operator ```=``` none of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-- with the operator ```!=``` one of the referenced values of the left hand *subTerm* is equal to one of the referenced values of the right hand *subTerm*.
-- with the operator ```~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-- with the operator ```!~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
-- with the operator ```?``` by the right hand *subTerm* no referenced data exists (null).
-- with the operator ```!``` by the right hand *subTerm* referenced data exists.
+- with the operator ```=``` none of the referenced values of the *left hand subTerm* is equal to one of the referenced values of the *right hand subTerm*.
+- with the operator ```!=``` one of the referenced values of the *left hand subTerm* is equal to one of the referenced values of the *right hand subTerm*.
+- with the operator ```~``` none of the referenced values of the *left hand subTerm* includes one of the referenced values of the *right hand subTerm*.
+- with the operator ```!~``` one of the referenced values of the *left hand subTerm* includes one of the referenced values of the *right hand subTerm*.
+- with the operator ```?``` by the *right hand subTerm* no referenced data exists (null).
+- with the operator ```!``` by the *right hand subTerm* referenced data exists.
 - all of the *chained subTermSets* are validated as false (OR).
 - one of the *repeated subSpecs* is validated as false (AND).
 
