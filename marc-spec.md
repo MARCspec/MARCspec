@@ -79,24 +79,23 @@ subfieldTag      = "$" subfieldChar
 subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                     ; [a-z]-[a-z] / [0-9]-[0-9]
 index            = "[" positionOrRange "]"
-fieldSpec        = fieldTag [index] [characterSpec] [indicators] *subSpec
-subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
-subfieldSpec     = 1*subfieldTagSpec *subSpec
-MARCspec         = fieldSpec [subfieldSpec]
+fieldSpec        = fieldTag [index] [characterSpec] [indicators]
+subfieldSpec     = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 comparisonString = "\" *VARCHAR
 operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
                     ; equal / unequal / includes / not includes / not exists / exists
-subTerm          = MARCspec / index / characterSpec / 1*subfieldTagSpec / comparisonString
-subTerms         = [ [subTerm] operator ] subTerm
-subSpec          = "{" subTerms *( "|" subTerms ) "}"
+subTerm          = fieldSpec / subfieldSpec / comparisonString
+subTermSet       = [ [subTerm] operator ] subTerm
+subSpec          = "{" subTermSet *( "|" subTermSet ) "}"
+MARCspec         = fieldSpec *subSpec *(subfieldSpec *subSpec)
 ``` 
 
 ### General form
 
-Every __MARCspec__ consists of one *fieldSpec* and optionally a *subfieldSpec*.
+Every __MARCspec__ consists of one *fieldSpec* followed optionally by one or more *subfieldSpecs*. Both *fieldSpec* and *subfieldSpec* can be contextualized through *subSpecs* (see section [SubSpecs]).
 
 ```
-MARCspec = fieldSpec [subfieldSpec]
+MARCspec = fieldSpec *subSpec *(subfieldSpec *subSpec)
 ```
 
 ### Reference to field data
@@ -105,8 +104,7 @@ A __fieldSpec__ is a reference to *field data* of a field. It consists of the th
 
 - by an *index* (see section [Reference to repetitions]),
 - by an *characterSpec* (see section [Reference to substring]),
-- by *indicators* (see section [Reference to data content]) and 
-- by an *subSpec* (see section [SubSpecs]).
+- by *indicators* (see section [Reference to data content]).
 
 The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. "3.." is then a reference to the *data elements* in all *fields* beginning with "3". 
 
@@ -116,7 +114,7 @@ The special *field tag* ```LDR``` is the *field tag* for the *leader*.
 alphaupper = %x41-5A ; A-Z
 alphalower = %x61-7A; a-z
 fieldTag   = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-fieldSpec  = fieldTag [index] [characterSpec] [indicators] *subSpec
+fieldSpec  = fieldTag [index] [characterSpec] [indicators]
 ``` 
 
 ### Reference to substring
@@ -146,17 +144,15 @@ Interpretation of a *range* differs through the position of the special *positio
 
 ### Reference to data content
 
-The __subfieldSpec__ is a reference to the *data content* (value) of a *subfield*. It consists of one or more *subfieldTagSpecs* followed optionally by one or more *subSpecs* (see section [SubSpecs]).
+The __subfieldSpec__ is a reference to the *data content* (value) of a *subfield*. It either consists of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
 
 ```
-subfieldSpec = 1*subfieldTagSpec *subSpec
+subfieldSpec = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 ```
 
-A __subfieldTagSpec__ consists either of a *subfieldTag* or a *subfieldTagRange* followed optionally by an *index* and a *characterSpec*.
+A __subfieldTag__ is a *subfieldChar* prefixed by the character ```$```.
 
-A __subfieldTag__ is a *subfieldChar* preceded by the character ```$```.
-
-A __subfieldTagRange__ is preceded by the character ```$``` and restricted to either two alphabetic or two numeric characters both concatenated with the character ```-```.
+A __subfieldTagRange__ is prefixed by the character ```$``` and restricted to either two alphabetic or two numeric characters both concatenated with the character ```-```.
 
 A __subfieldChar__ is a lowercase alphabetic, a numeric character or a special character.
 
@@ -164,7 +160,6 @@ A __subfieldChar__ is a lowercase alphabetic, a numeric character or a special c
 subfieldChar     = %x21-3F / %x5B-7B / %x7D-7E
 subfieldTag      = "$" subfieldChar
 subfieldTagRange = "$" ( (%x61-7A "-" %x61-7A) / (%x30-39 "-" %x30-39) )
-subfieldTagSpec  = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 ```
 
 ### Reference to repetitions
@@ -179,7 +174,7 @@ index = "[" positionOrRange "]"
 
 #### Indicators
 
-__Indicators__ are preceded by the character ```_```. There are two indicators: __indicator 1__ and __indicator 2__. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
+__Indicators__ are prefixed by the character ```_```. There are two indicators: __indicator 1__ and __indicator 2__. Both are optional and either represented through a lowercase alphabetic or a numeric character. If *indicator 1* is not specified, it MUST be replaced by the character ```_```. If *indicator 2* is not specified it might be replaced by the character ```_``` or left blank.
 
 ```
 indicator  = alphalower / DIGIT
@@ -190,15 +185,14 @@ indicators = "_" (indicator1 / "_") [indicator2 / "_"]
 
 #### SubSpecs
 
-With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every subSpec MUST be validated either __true__ or __false__. Is a subSpec true, the preceding spec is used to reference data. Is a subSpec false, the preceding spec doesn't get used.
+With a __subSpec__ the preceding *fieldSpec* or *subfieldSpec* gets contextualized. Every *subSpec* MUST be validated either __true__ or __false__. Is a *subSpec* *true*, the preceding spec is used to reference data. Is a subSpec *false*, the preceding spec doesn't get used to reference data.
 
-A *subSpec* is enclosed with the characters ```{``` and ```}```. A *subSpec* consists of a set of *subTerms* (the __left hand subTerm__ and the __right hand subTerm__) and an *operator*. This combination of *subTerms* and an *operator* can be *chained* through the character ```|``` (__OR__) within a *subSpec*. Multiple *subSpecs* can also be *repeated* one after another (__AND__).
-
-By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists). 
+A *subSpec* is enclosed with the characters ```{``` and ```}```. A *subSpec* consists of one or more sets of *subTerms* (the __left hand subTerm__ and the __right hand subTerm__) and an *operator*. This combination of *subTerms* and an *operator* can be *chained* through the character ```|``` (__OR__) within a *subSpec*. Multiple *subSpecs* can also be *repeated* one after another (__AND__).
 
 ```
-subTerms = [ [subTerm] operator ] subTerm
-subSpec  = "{" subTerms *( "|" subTerms ) "}"
+subTerm          = fieldSpec / subfieldSpec / comparisonString
+subTermSet       = [ [subTerm] operator ] subTerm
+subSpec          = "{" subTermSet *( "|" subTermSet ) "}"
 ```
 
 The __operator__ is one of
@@ -216,13 +210,28 @@ operator = "=" / "!=" / "~" / "!~" / "!" / "?"
  
 A __subTerm__ is one of
 
-- *MARCspec*
-- *index*
-- *characterSpec*
-- *subfieldTagSpec* (one or more)
+- *fieldSpec*
+- *subfieldSpec*
 - *comparisonString*.
 
-A __comparisonString__ can be every combination of ASCII characters preceded by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
+It is possible to __abbreviate__ a contextualized *fieldSpec* by only using
+
+- an *index* and/or
+- a *characterSpec*  and/or
+- *indicators*
+
+as a *subTerm* (see [Abbreviation of fieldSpec or subfieldSpec] for examples).
+
+It is possible to __abbreviate__ a contextualized *subfieldSpec* by only using
+
+- an *index* and/or
+- a *characterSpec*
+
+as a *subTerm* (see [Abbreviation of fieldSpec or subfieldSpec] for examples).
+
+By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists).
+
+A __comparisonString__ can be every combination of ASCII characters prefixed by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
 
 - ```{```
 - ```}```
@@ -234,11 +243,8 @@ A __comparisonString__ can be every combination of ASCII characters preceded by 
 
 In a *comparisonString* a whitespace MUST be encoded as the character combination ```\s```.
 
-The *characterSpec* or the *subfieldTagSpec* is optionally preceded by a *fieldTag*. By omitting the *fieldTag*, this implicitly makes the *fieldTag* of predeeding *MARCspec* the current *fieldTag* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data with subSpecs examples] for examples). A *subTerm* might also be followed by another (encapsulated) *subSpec* (see [MARCspec interpretation] for implicit rules).
-
 ```
 comparisonString = "\" *VARCHAR
-subTerm          = MARCspec / index / characterSpec / 1*subfieldTagSpec / comparisonString
 ```
 
 ## MARCspec interpretation
@@ -260,9 +266,9 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 ### SubSpec interpretation
 
-1. For __chained sets of subTerms__, if one *subTerm set* gets validated as true, the preceding spec gets referenced (OR) as log as all other *repeated SubSpecs* are validated as true.
+1. For __chained sets of subTerms__, if one *subTermSet* gets validated as true, the preceding spec gets referenced (OR) as log as all other *repeated SubSpecs* are validated as true.
 2. For __repeatable subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
-3. For omitted *fieldTag* on a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
+3. For abbreviated *fieldSpec* or *subfieldSpec* as , the *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
 5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```=```, the operator can also be omitted. 
 
@@ -278,7 +284,7 @@ A *subSpec* is __true__, if
 - with the operator ```!~``` none of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 - with the operator ```?``` by the right hand *subTerm* referenced data exists.
 - with the operator ```!``` by the right hand *subTerm* no referenced data exists.
-- one of the *chained subTerm sets* is validated as true (OR) and all other *repeated subSpecs* are validated as true.
+- one of the *chained subTermSets* is validated as true (OR) and all other *repeated subSpecs* are validated as true.
 - all of the *repeated subSpecs* are validated as true (AND).
 
 A *subSpec* is __false__, if
@@ -290,7 +296,7 @@ A *subSpec* is __false__, if
 - with the operator ```!~``` one of the referenced values of the left hand *subTerm* includes one of the referenced values of the right hand *subTerm*.
 - with the operator ```?``` by the right hand *subTerm* no referenced data exists (null).
 - with the operator ```!``` by the right hand *subTerm* referenced data exists.
-- all of the *chained subTerm sets* are validated as false (OR).
+- all of the *chained subTermSets* are validated as false (OR).
 - one of the *repeated subSpecs* is validated as false (AND).
 
 ### SubTerm validation table
@@ -312,7 +318,6 @@ MARCspec does not redefine terms already used by the [Network Development and MA
 
 | term                          | definition   |
 |-------------------------------|--------------|
-|__characterSpec__              |The position or range of positions of characters in *control fields* and *leader*. The first charater has always the position *0*.|
 |__content designation__        |The codes and conventions established explicitly by MARC 21 to identify and further characterize the *data elements* within a record and to support the manipulation of that data.|
 |__content of field__           |see *field content*|
 |__control field__              |A *variable field* containing information useful or required for the processing of the record. Control fields are assigned *tags* beginning with two zeroes. Control fields with fixed length data elements are restricted to ASCII graphics.|
@@ -591,6 +596,33 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 ```
 
 ---
+
+###Abbreviation of fieldSpec or subfieldSpec
+
+Reference to data of the first repetition of field "800",
+ if data content of subfield "a" within the context of indicator 2 is "1"
+ of the preceding fieldSpec includes the comparisonString "Poe".
+ 
+```
+800[0]{__1$a~\Poe}
+
+or
+
+800[0]{800[0]__1$a~\Poe}
+```
+
+---
+
+Reference of data content of subfield "a" of field "245",
+ if last character of the preceding spec equals the comparisonString "/".
+ 
+```
+245$a{/#=\/}
+
+or
+
+245$a{245$a/#=\/}
+```
 
 
 # References
