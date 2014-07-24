@@ -28,7 +28,7 @@ The *data* of the MARC record being referenced may be represented through a *set
 
 A MARCspec might not fulfil all requirements of definition for a reference to the desired set of data like XPath does for XML. This is because of the nearly unlimited number of options accessing data in a MARC record, especially when it comes to delimiters based on cataloging rules. Thus a MARCspec has to concentrate on the basic references and let all other data processing to subsequent data processing functions of tools having implemented MARCspec.
 
-To enable support for other [ISO 2709] applications MARCspecs syntax does not distinguish between types of fields like in the [MARC] record structure. A valid MARCspec might violate the MARC record structure. It is led to the MARCspec aware tools wheater to check for MARC record structure violation or not. 
+To enable support for other [ISO 2709] applications MARCspecs syntax does not distinguish between types of fields like in the [MARC] record structure. A valid MARCspec might violate the MARC record structure. It is led to the MARCspec aware tools weather to check for MARC record structure violation or not. 
 
 ## Basic references
 
@@ -233,6 +233,7 @@ By omitting the *left hand subTerm*, this implicitly makes the preceding spec th
 
 A __comparisonString__ can be every combination of ASCII characters prefixed by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
 
+- ```$```
 - ```{```
 - ```}```
 - ```!```
