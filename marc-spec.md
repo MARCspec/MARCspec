@@ -81,7 +81,7 @@ subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
 index            = "[" positionOrRange "]"
 fieldSpec        = fieldTag [index] [characterSpec] [indicators]
 subfieldSpec     = (subfieldTag / subfieldTagRange) [index] [characterSpec]
-comparisonString = "\" *VARCHAR
+comparisonString = "\" *VCHAR
 operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
                     ; equal / unequal / includes / not includes / not exists / exists
 subTerm          = fieldSpec / subfieldSpec / comparisonString
@@ -245,7 +245,7 @@ A __comparisonString__ can be every combination of ASCII characters prefixed by 
 In a *comparisonString* a whitespace MUST be encoded as the character combination ```\s```.
 
 ```
-comparisonString = "\" *VARCHAR
+comparisonString = "\" *VCHAR
 ```
 
 ## MARCspec interpretation
