@@ -69,7 +69,7 @@ indicator1       = indicator
 indicator2       = indicator
 indicators       = "_" (indicator1 / "_") [indicator2 / "_"]
 fieldTag         = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-position         = positivInteger / "#"
+position         = positiveInteger / "#"
 range            = position "-" position
 positionOrRange  = position / range
 characterSpec    = "/" positionOrRange
@@ -135,7 +135,7 @@ The __range__ consists of two *positions* concatenated with the character ```-``
 positiveDigit   = %x31-39
                     ;  "1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9"
 positiveInteger = "0" / positiveDigit [1*DIGIT]
-position        = positivInteger / "#"
+position        = positiveInteger / "#"
 range           = position "-" position
 positionOrRange = position / range
 ```
