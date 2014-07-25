@@ -68,10 +68,10 @@ indicator        = alphalower / DIGIT
 indicator1       = indicator
 indicator2       = indicator
 indicators       = "_" (indicator1 / "_") [indicator2 / "_"]
-fieldTag         = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
+fieldTag         = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
 position         = positiveInteger / "#"
 range            = position "-" position
-positionOrRange  = position / range
+positionOrRange  = range / position
 characterSpec    = "/" positionOrRange
 subfieldChar     = %x21-3F / %x5B-7B / %x7D-7E
                     ; ! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? [ \ ] ^ _ \` a-z { } ~
@@ -79,7 +79,7 @@ subfieldTag      = "$" subfieldChar
 subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                     ; [a-z]-[a-z] / [0-9]-[0-9]
 index            = "[" positionOrRange "]"
-fieldSpec        = fieldTag [index] [characterSpec] [indicators]
+fieldSpec        = fieldTag [index] [characterSpec / indicators]
 subfieldSpec     = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 comparisonString = "\" *VCHAR
 operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
@@ -102,8 +102,8 @@ MARCspec = fieldSpec *subSpec *(subfieldSpec *subSpec)
 
 A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag*, followed optionally
 
-- by an *index* (see section [Reference to repetitions]),
-- by an *characterSpec* (see section [Reference to substring]),
+- by an *index* (see section [Reference to repetitions]) and
+- by an *characterSpec* (see section [Reference to substring]) or
 - by *indicators* (see section [Reference to data content]).
 
 The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. "3.." is then a reference to the *data elements* in all *fields* beginning with "3". 
@@ -113,8 +113,8 @@ The special *field tag* ```LDR``` is the *field tag* for the *leader*.
 ```
 alphaupper = %x41-5A ; A-Z
 alphalower = %x61-7A; a-z
-fieldTag   = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
-fieldSpec  = fieldTag [index] [characterSpec] [indicators]
+fieldTag   = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
+fieldSpec  = fieldTag [index] [characterSpec / indicators]
 ``` 
 
 ### Reference to substring
@@ -137,7 +137,7 @@ positiveDigit   = %x31-39
 positiveInteger = "0" / positiveDigit [1*DIGIT]
 position        = positiveInteger / "#"
 range           = position "-" position
-positionOrRange = position / range
+positionOrRange = range / position
 ```
 
 Interpretation of a *range* differs through the position of the special *position* character ````#``` as a symbol for the last character of the referenced *data content* (see [MARCspec interpretation] for implicit rules).
