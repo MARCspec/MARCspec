@@ -79,7 +79,9 @@ subfieldTag      = "$" subfieldChar
 subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                     ; [a-z]-[a-z] / [0-9]-[0-9]
 index            = "[" positionOrRange "]"
-fieldSpec        = fieldTag [index] [characterSpec / indicators]
+fixedField       = fieldTag [index] characterSpec
+variableField    = fieldTag [index] indicators
+fieldSpec        = fixedField / variableField
 subfieldSpec     = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 comparisonString = "\" *VCHAR
 operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
@@ -87,15 +89,16 @@ operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
 subTerm          = fieldSpec / subfieldSpec / comparisonString
 subTermSet       = [ [subTerm] operator ] subTerm
 subSpec          = "{" subTermSet *( "|" subTermSet ) "}"
-MARCspec         = fieldSpec *subSpec *(subfieldSpec *subSpec)
+MARCspec         = (variableField *subSpec *(subfieldSpec *subSpec)) / fixedField *subSpec
 ``` 
 
 ### General form
 
-Every __MARCspec__ consists of one *fieldSpec* followed optionally by one or more *subfieldSpecs*. Both *fieldSpec* and *subfieldSpec* can be contextualized through *subSpecs* (see section [SubSpecs]).
+Every __MARCspec__ consists of a *fixed field* spec or *variable field* spec. *Variable fields* followed optionally by one or more *subfieldSpecs*. Both *fieldSpec* and *subfieldSpec* can be contextualized through *subSpecs* (see section [SubSpecs]).
 
 ```
-MARCspec = fieldSpec *subSpec *(subfieldSpec *subSpec)
+fieldSpec = fixedField / variableField
+MARCspec  = (variableField *subSpec *(subfieldSpec *subSpec)) / fixedField *subSpec
 ```
 
 ### Reference to field data
@@ -103,18 +106,19 @@ MARCspec = fieldSpec *subSpec *(subfieldSpec *subSpec)
 A __fieldSpec__ is a reference to *field data* of a field. It consists of the three character *field tag*, followed optionally
 
 - by an *index* (see section [Reference to repetitions]) and
-- by an *characterSpec* (see section [Reference to substring]) or
-- by *indicators* (see section [Reference to data content]).
+- by an *characterSpec* (for *fixed fields*) (see section [Reference to substring]) or
+- by *indicators* (for *variable fields*) (see section [Reference to data content]).
 
 The __field tag__ may consist of ASCII numeric characters (decimal integers 0-9) and/or ASCII alphabetic characters (uppercase or lowercase, but not both) or the character ```.```. The character ```.``` is interpreted as a wildcard. E.g. "3.." is then a reference to the *data elements* in all *fields* beginning with "3". 
 
 The special *field tag* ```LDR``` is the *field tag* for the *leader*. 
 
 ```
-alphaupper = %x41-5A ; A-Z
-alphalower = %x61-7A; a-z
-fieldTag   = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
-fieldSpec  = fieldTag [index] [characterSpec / indicators]
+alphaupper    = %x41-5A ; A-Z
+alphalower    = %x61-7A; a-z
+fieldTag      = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
+fixedField    = fieldTag [index] characterSpec
+variableField = fieldTag [index] indicators
 ``` 
 
 ### Reference to substring
