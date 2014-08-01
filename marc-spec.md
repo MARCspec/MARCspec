@@ -18,9 +18,9 @@ See also [Definition of MARC related terms used in this spec].
 
 ## What is a MARCspec?
 
-Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic data. The data of a MARC record consists of __fields__, __subfields__ and its __contents__. There are two kinds of MARC fields: *fixed fields* and *data fields*. The *field content* in the the *fixed fields* can be accessed through its *character position or range*. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through *indicators*. There is an *indicator 1* and an *indicator 2* for all *data fields*, both are optional. See [MARC 21 Principles] for a deeper explanation of the MARC 21 format.
+Machine-Readable Cataloguing (MARC) is a document based key-value exchange format for bibliographic and other library related data. A MARC record consists of three main sections: the __leader__, the __directory__, and the __variable fields__ with the __data content__. There are two kinds of (variable) fields: (variable) __control fields__ and (variable) __data fields__. The term __fixed field__ stands for fields whose length does not vary like the leader and some of the *control fields*. The __field content__ in the the *fixed fields* can be accessed through its __character position or range__. Only *data fields* are divided into *subfields*. *Subfields* can also be contextualized through indicators. There is an indicator 1 and an indicator 2 for all data fields, both are optional.
 
-__MARCspec__ is very much like XPath is for XML. With MARCspec one can reference data on different levels of a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*.
+A __MARCspec__ is a reference to field data of a MARC record and is very much like XPath for XML. With MARCspec one can reference data on different levels of a MARC record defined through the *fields*, *character positions*, *subfields* and *indicators*.
 
 The *data* of the MARC record being referenced may be represented through a *set of data*, having zero or more *data elements*. MARCspec does neither define the form of this referenced *set of data*, nor the encoding of the referenced *data content*.  
 
@@ -32,20 +32,18 @@ To enable support for other [ISO 2709] applications MARCspecs syntax does not di
 
 ## Basic references
 
-A MARCspec as string should cope the following basic references:
+A MARCspec allows the following basic references:
 
-- Reference to *field data* of *fields* by *field tag*
-- Reference to *field data* of one or more repetitions of a *field* by *field index* or field index range
-- Reference to *field data* of *variable fields* within the context of *indicators*
-- Reference to substring of *field content* in *fields* by *character position or range*
-- Reference to *data content* in *variable fields* by *subfield tags*
-- Reference to *data content* of one or more repetitions of a *subfield* by *subfield index* or subfield index range
-- Reference to substring of *data content* in *subfields* by *character position or range*
-- Reference to *data content* within the context of other *data content* (__new__)
+- Reference to *record data* (except data from the record directory)
+- Reference to *field data*
+- Reference to *data content* of subfields
+- Reference to substrings of *data content* of fixed fields and subfields
 
-References a MARCspec as string does not cope
+References a MARCspec does allow are:
 
-- Reference to *data elements* in related records
+- Reference to single *designators*, field tags or subfield codes
+- Reference to a position index of a specific field, subfield or character
+- Reference to data in related records
 - Reference to *data elements* (entries) in the MARC record directory
 
 ## Form of MARCspec as string
