@@ -66,7 +66,7 @@ indicator        = alphalower / DIGIT
 indicator1       = indicator
 indicator2       = indicator
 indicators       = "_" (indicator1 / "_") [indicator2 / "_"]
-fieldTag         = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
+fieldTag         = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
 position         = positiveInteger / "#"
 range            = position "-" position
 positionOrRange  = range / position
@@ -114,7 +114,7 @@ The special *field tag* ```LDR``` is the *field tag* for the *leader*.
 ```
 alphaupper    = %x41-5A ; A-Z
 alphalower    = %x61-7A; a-z
-fieldTag      = 3(alphalower / DIGIT) / 3(alphaupper / DIGIT) / 3(DIGIT / ".")
+fieldTag      = 3(alphalower / DIGIT / ".") / 3(alphaupper / DIGIT / ".")
 fixedField    = fieldTag [index] characterSpec
 variableField = fieldTag [index] indicators
 ``` 
