@@ -252,7 +252,7 @@ comparisonString = "\" *VCHAR
 
 ## MARCspec interpretation
 
-[MARCspec interpretation]: #interpretation
+[MARCspec interpretation]: #marcspec-interpretation
 
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
