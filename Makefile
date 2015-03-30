@@ -1,4 +1,4 @@
-NAME=MARCspec
+NAME=marc-spec
 GITHUB=https://github.com/MARCspec/MARCspec/
 AUTHOR=Carsten Klee (ZDB)
 HTML_CSS=code-box.css
