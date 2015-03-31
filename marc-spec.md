@@ -8,7 +8,7 @@ The hereby described specification __MARCspec__ can help to build reusable MARCs
 
 ## Status of this document
 
-The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/cklee/marc-spec/issues) is welcome!
+The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/MARCspec/MARCspec/issues) is welcome!
 
 ## Terminology
 
