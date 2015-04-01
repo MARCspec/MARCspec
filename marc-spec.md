@@ -674,3 +674,4 @@ or
 [easyM2R]: https://github.com/cKlee/easyM2R
 [Network Development and MARC Standards Office]: http://www.loc.gov/marc/ndmso.html
 [RECORD STRUCTURE]: http://www.loc.gov/marc/specifications/specrecstruc.html
+
