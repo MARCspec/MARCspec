@@ -8,7 +8,7 @@ The hereby described specification __MARCspec__ can help to build reusable MARCs
 
 ## Status of this document
 
-The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/MARCspec/MARCspec/issues) is welcome!
+The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/cklee/marc-spec/issues) is welcome!
 
 ## Terminology
 
@@ -260,6 +260,10 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 2. For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
 3. For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
 4. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+
+### Interpretation order
+
+1. For repeatable *fields* referenced by *index* and *indicators* the *fields* MUST first be referenced by *index*. *Indicators* work like a filter on the referenced *fields* as a second order. 
 
 ### Character position or range interpretation
 
@@ -529,6 +533,12 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 
 ```
 245__0$a
+```
+
+Reference to value of the subfield "a" of the first three repetitions of field "307"  within the context of *indicator 1* with the value "8". This will NOT reference the first three 307 fields that are in the context of indicator 1.
+
+```
+307_8[0-3]$a
 ```
 
 ## Reference to contextualized data with subSpecs examples
