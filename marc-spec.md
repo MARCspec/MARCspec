@@ -265,11 +265,12 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 1. For repeatable *fields* referenced by *index* and *indicators* the *fields* MUST first be referenced by *index*. *Indicators* work like a filter on the referenced *fields* as a second order. 
 
-### Character position or range interpretation
+### Character position or range and field indizes interpretation
 
 1. The *postion* character ```#``` is always a reference to the last character in the *data content*.
 2. For character range, if the *positive integer* used for the character starting position is greater than the *positive integer* used for the character ending position, the current spec MUST NOT reference any data.
 3. For character range, if the character ```#``` is used for the character starting position, the character indices MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
+4. These rules also apply for *field indices*.
 
 ### SubSpec interpretation
 
