@@ -278,7 +278,7 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 2. For __repeatable subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
 3. For abbreviated *fieldSpec* or *subfieldSpec* as , the *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
-5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```=```, the operator can also be omitted. 
+5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```?```, the operator can also be omitted. 
 
 ### SubSpec validation
 
