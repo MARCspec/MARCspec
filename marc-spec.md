@@ -231,7 +231,7 @@ It is possible to __abbreviate__ a contextualized *subfieldSpec* by only using
 
 as a *subTerm* (see [Abbreviation of fieldSpec or subfieldSpec] for examples).
 
-By omitting the *left hand subTerm*, this implicitly makes the preceding spec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists).
+By omitting the *left hand subTerm*, this implicitly makes the preceding spec outside the subfieldSpec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists).
 
 A __comparisonString__ can be every combination of ASCII characters prefixed by the ```\``` character. For unambiguousness in a *comparisonString* the following characters MUST be escaped by the character ```\```:
 
@@ -257,9 +257,8 @@ comparisonString = "\" *VCHAR
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
 1. A MARCspec without *subfield tags* or *position or range* is a reference to all *data elements* of the field.
-2. For repeatable *fields* the *field tag* without an *index* MUST be interpreted as a reference to the data in all repetitions.
-3. For repeatable *subfields* the *subfield tag* without an *index* MUST be interpreted as a reference to the data content in all repetitions.
-4. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
+2. A *fieldSpec * or a *subfieldSpec* without an explicitly given *index* is always an abbreviation of *n* references. Where *n* is the number of occurences of the referenced *field* or *subfield*. Thus an abbreviated MARCspec MUST be interpreted independendly (OR) *n*-times (see [Abbreviation of fieldSpec or subfieldSpec]).
+3. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
 ### Interpretation order
 
@@ -276,7 +275,7 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 
 1. For __chained sets of subTerms__, if one *subTermSet* gets validated as true, the preceding spec gets referenced (OR) as long as all other *repeated SubSpecs* are validated as true.
 2. For __repeatable subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
-3. For abbreviated *fieldSpec* or *subfieldSpec* as , the *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
+3. For abbreviated *fieldSpec* or *subfieldSpec* as  a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
 5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```?```, the operator can also be omitted. 
 
@@ -595,10 +594,6 @@ Reference data content of subfield "c" of field "020", if subfield "a" of field 
 
 ```
 020$c{$a}
-
-or
-
-020$c{?$a}
 ```
 
 ---
@@ -613,6 +608,54 @@ Reference data content of subfield "z" of field "020", if subfield "a" of field 
 
 ###Abbreviation of fieldSpec or subfieldSpec
 
+As of [MARCspec interpretation] a MARCspec without an explicitly given index is always an abbreviations of *n* references this example shows how these specs are interpreted.
+
+Example Data:
+
+```
+020 ##$a0394170660$qRandom House$c$4.95
+020 ##$a0491001304
+```
+
+Reference to data content of subfield "q" of field "020" if subfield "c" exists.
+
+```
+020$q{$c}
+
+same as
+
+020[0]$q{?020[0]$c} OR
+020[1]$q{?020[1]$c}
+```
+
+---
+Example Data:
+
+```
+020 ##$a0394170660$qRandom House$qpaperback$c$4.95
+020 ##$a0394502884$qRandom House$qhardcover$c$12.50 
+```
+
+Reference to data content of subfield "c" if data content of one repetition of subfield "q" equals the comparison string "paperback".
+
+```
+020$c{$q=\paperback}
+
+same as
+
+020$c{$q[0]=\paperback} OR // false
+020$c{$q[1]=\paperback}    // true
+
+same as 
+
+020[0]$c{020[0]$q[0]=\paperback} OR // false
+020[0]$c{020[0]$q[1]=\paperback} OR // true
+020[1]$c{020[1]$q[0]=\paperback} OR // false
+020[1]$c{020[1]$q[1]=\paperback}    // false
+```
+
+---
+
 Reference to data of the first repetition of field "800",
  if data content of subfield "a" within the context of indicator 2 is "1"
  of the preceding fieldSpec includes the comparisonString "Poe".
@@ -620,7 +663,7 @@ Reference to data of the first repetition of field "800",
 ```
 800[0]{__1$a~\Poe}
 
-or
+same as
 
 800[0]{800[0]__1$a~\Poe}
 ```
@@ -675,4 +718,3 @@ or
 [easyM2R]: https://github.com/cKlee/easyM2R
 [Network Development and MARC Standards Office]: http://www.loc.gov/marc/ndmso.html
 [RECORD STRUCTURE]: http://www.loc.gov/marc/specifications/specrecstruc.html
-
