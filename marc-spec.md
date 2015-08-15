@@ -668,7 +668,7 @@ Reference to data of the first repetition of field "800",
 800[0]{800[0]__1$a~\Poe}
 ```
 
-An abbreviated subTerm like ````__1$a``` in
+An abbreviated subTerm like ```__1$a``` in
 
 ```
 800[0]{__1$a~\Poe}
