@@ -257,7 +257,7 @@ comparisonString = "\" *VCHAR
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
 1. A MARCspec without *subfield tags* or *position or range* is a reference to all *data elements* of the field.
-2. A *fieldSpec * or a *subfieldSpec* without an explicitly given *index* is always an abbreviation of *n* references. Where *n* is the number of occurences of the referenced *field* or *subfield*. Thus an abbreviated MARCspec MUST be interpreted independendly (OR) *n*-times (see [Abbreviation of fieldSpec or subfieldSpec]).
+2. A *fieldSpec * or a *subfieldSpec* without an explicitly given *index* is always an abbreviation of a reference with the starting index ```0``` and the ending index ```#```. Where *n* is the number of occurences of the referenced *field* or *subfield*(see [Abbreviation of fieldSpec or subfieldSpec]).
 3. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
 ### Interpretation order
@@ -624,8 +624,12 @@ Reference to data content of subfield "q" of field "020" if subfield "c" exists.
 
 same as
 
-020[0]$q{?020[0]$c} OR
-020[1]$q{?020[1]$c}
+020[0-#]$q[0-#]{$c[0-#]}
+
+same as
+
+020[0]$q[0]{?020[0]$c[0]} OR // true
+020[1]$q[0]{?020[1]$c[0]} // false
 ```
 
 ---
@@ -644,15 +648,14 @@ Reference to data content of subfield "c" if data content of one repetition of s
 
 same as
 
-020$c{$q[0]=\paperback} OR // false
-020$c{$q[1]=\paperback}    // true
+020[0-#]$c[0-#]{$q[0-#]=\paperback}
 
 same as 
 
-020[0]$c{020[0]$q[0]=\paperback} OR // false
-020[0]$c{020[0]$q[1]=\paperback} OR // true
-020[1]$c{020[1]$q[0]=\paperback} OR // false
-020[1]$c{020[1]$q[1]=\paperback}    // false
+020[0]$c[0]{020[0]$q[0]=\paperback} OR // false
+020[0]$c[0]{020[0]$q[1]=\paperback} OR // true
+020[1]$c[0]{020[1]$q[0]=\paperback} OR // false
+020[1]$c[0]{020[1]$q[1]=\paperback}    // false
 ```
 
 ---
@@ -662,12 +665,16 @@ Reference to data of the first repetition of field "800",
  of the preceding fieldSpec includes the comparisonString "Poe".
  
 ```
-800[0]{__1$a~\Poe}
-
-same as
-
 800[0]{800[0]__1$a~\Poe}
 ```
+
+An abbreviated subTerm like ````__1$a``` in
+
+```
+800[0]{__1$a~\Poe}
+```
+
+is __invalid__! An abbreviated subterm MUST only be one of fieldspec or subfieldspec.
 
 ---
 
@@ -677,7 +684,7 @@ Reference of data content of subfield "a" of field "245",
 ```
 245$a{/#=\/}
 
-or
+same as
 
 245$a{245$a/#=\/}
 ```
