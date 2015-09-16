@@ -77,14 +77,17 @@ subfieldTag      = "$" subfieldChar
 subfieldTagRange = "$" ( (alphalower "-" alphalower) / (DIGIT "-" DIGIT) )
                     ; [a-z]-[a-z] / [0-9]-[0-9]
 index            = "[" positionOrRange "]"
-fixedField       = fieldTag [index] characterSpec
-variableField    = fieldTag [index] indicators
+fixedField       = fieldTag [index] [characterSpec]
+variableField    = fieldTag [index] [indicators]
 fieldSpec        = fixedField / variableField
 subfieldSpec     = (subfieldTag / subfieldTagRange) [index] [characterSpec]
 comparisonString = "\" *VCHAR
 operator         = "=" / "!=" / "~" / "!~" / "!" / "?"
                     ; equal / unequal / includes / not includes / not exists / exists
-subTerm          = fieldSpec / subfieldSpec / comparisonString
+abrFieldSpec     = index [ (characterSpec / indicators) ] / characterSpec / indicators
+abrSubfieldSpec  = index [characterSpec] / characterSpec
+abbreviation     = abrFieldSpec / abrSubfieldSpec
+subTerm          = fieldSpec / subfieldSpec / comparisonString / abbreviation
 subTermSet       = [ [subTerm] operator ] subTerm
 subSpec          = "{" subTermSet *( "|" subTermSet ) "}"
 MARCspec         = (variableField *subSpec *(subfieldSpec *subSpec)) / fixedField *subSpec
@@ -218,18 +221,29 @@ A __subTerm__ is one of
 
 It is possible to __abbreviate__ a contextualized *fieldSpec* by only using
 
-- an *index* and/or
-- a *characterSpec*  and/or
+- *index* or
+- *index* and *characterSpec*  or
+- *index* and *indicators* or
+- *characterSpec* or
 - *indicators*
 
-as a *subTerm* (see [Abbreviation of fieldSpec or subfieldSpec] for examples).
+```
+abrFieldSpec     = index [ (characterSpec / indicators) ] / characterSpec / indicators
+```
+
+as a *subTerm* (see [SubSpec abbreviation] and [Abbreviation of fieldSpec or subfieldSpec] for examples).
 
 It is possible to __abbreviate__ a contextualized *subfieldSpec* by only using
 
-- an *index* and/or
-- a *characterSpec*
+- *index* or
+- *index* and *characterSpec*  or
+- *characterSpec*
 
-as a *subTerm* (see [Abbreviation of fieldSpec or subfieldSpec] for examples).
+```
+abrSubfieldSpec  = index [characterSpec] / characterSpec
+```
+
+as a *subTerm* (see [SubSpec abbreviation] and [Abbreviation of fieldSpec or subfieldSpec] for examples).
 
 By omitting the *left hand subTerm*, this implicitly makes the preceding spec outside the subfieldSpec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules and [Reference to contextualized data examples] for examples). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists).
 
@@ -257,7 +271,7 @@ comparisonString = "\" *VCHAR
 Because of the limited expressivity of the MARCspec there must be some kind of implicit interpretation.
 
 1. A MARCspec without *subfield tags* or *position or range* is a reference to all *data elements* of the field.
-2. A *fieldSpec * or a *subfieldSpec* without an explicitly given *index* is always an abbreviation of a reference with the starting index ```0``` and the ending index ```#```. Where *n* is the number of occurences of the referenced *field* or *subfield*(see [Abbreviation of fieldSpec or subfieldSpec]).
+2. A *fieldSpec * or a *subfieldSpec* without an explicitly given *index* is always an abbreviation of a reference with the starting index ```0``` and the ending index ```#``` (see [Abbreviation of fieldSpec or subfieldSpec]).
 3. Omitted *indicators* in a MARCspec are interpreted as wildcards for variable field indicators in the MARC record.
 
 ### Interpretation order
@@ -269,15 +283,36 @@ Because of the limited expressivity of the MARCspec there must be some kind of i
 1. The *postion* character ```#``` is always a reference to the last character in the *data content*.
 2. For character range, if the *positive integer* used for the character starting position is greater than the *positive integer* used for the character ending position, the current spec MUST NOT reference any data.
 3. For character range, if the character ```#``` is used for the character starting position, the character indices MUST be interpreted backwards (like character ending position ```0``` for the last character, ```1``` for the last but one character, ```2``` for the last but two characters etc.).
-4. These rules also apply for *field indices*.
+4. These above rules also apply for *indices* (index).
 
 ### SubSpec interpretation
 
-1. For __chained sets of subTerms__, if one *subTermSet* gets validated as true, the preceding spec gets referenced (OR) as long as all other *repeated SubSpecs* are validated as true.
-2. For __repeatable subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
-3. For abbreviated *fieldSpec* or *subfieldSpec* as  a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
+1. For __chained subTermSets__, if one *subTermSet* gets validated as true, the preceding spec gets referenced (OR) as long as all other *repeated SubSpecs* are validated as true.
+2. For __repeated subSpecs__, if one *subSpec* gets validated as false, the preceding spec doesn't get referenced (AND).
+3. For abbreviated *fieldSpec* or *subfieldSpec* as a *subTerm*, the last explicitly given *fieldTag* is the current *fieldTag*.
 4. As a shortcut, the left hand *subTerm* might be omitted. This implicitly makes the last explicitly given *fieldTag* plus the last explicitly given *characterSpec* or *subfieldTagSpec* the current (left hand) *subTerm*.
 5. If the left hand *subTerm* is omitted, as a shortcut for the operator ```?```, the operator can also be omitted. 
+
+### SubSpec abbreviation
+
+The following tableshows how SubSpec abbreviation MUST be interpreted.
+
+| corresponding spec type | corresponding spec end with | abbreviated spec begins with | interpretation      | example    |
+|:-----------------------:|:---------------------------:|:----------------------------:|:-------------------:|:----------:|
+|fieldSpec|index|index|valid FieldSpec with index|...[2]{[1]} => ...[2]{...[1]}|
+|fieldSpec|index|characterSpec|valid fieldSpec with index and characterSpec|...[1]{/0-3} => ...[1]{...[1]/0-3}|
+|fieldSpec|index|indicators|valid fieldSpec with index and indicators|...[1]{_01} => ...[1]{...[1]_01}|
+|fieldSpec|characterSpec|index|valid fieldSpec with index|.../0-7{[0]} => .../0-7{005[0]}|
+|fieldSpec|characterSpec|characterSpec|valid fieldSpec with characterSpec|.../0-7{/0=\2} => .../0-7{.../0}|
+|fieldSpec|characterSpec|indicators|__invalid__ fieldspec since characterSpec denotes a fixedField, which can't be used with indicators|.../0-7{_1} => .../0-7{.../0-7_1}|
+|fieldSpec|indicators|index|valid fieldSpec with index|...[1]_1{[0]} => ...[1]_1{...[0]}<br/>..._1{[1]} => ..._1{...[1]}<br/>...[1]_1{[0]_0} => ...[1]_1{...[1]_1}|
+|fieldSpec|indicators|characterSpec|__invalid__ fieldspec since indicators denotes a variableField, which can't be used with characterSpec|245_00{/0-2} => 245_00{245_00/0-2}|
+|fieldSpec|indicators|indicators|valid fieldSpec with indicators|..._1{_01} => ..._1{..._01}|
+|subfieldSpec|index|index|valid subfieldSpec with index|...$a[0]{[1]} => ...$a[0]{...$a[1]}|
+|subfieldSpec|index|characterSpec|valid subfieldSpec with index and characterSpec|...$a[0]{/0} => ...$a[0]{...$a[0]/0}|
+|subfieldSpec|characterSpec|index|valid subfieldSpec with index|...$a/1{[1]} => ...$a/1{...$a[1]}<br/>...$a/1{[1]/1} => ...$a/1{...$a[1]/1}|
+|subfieldSpec|characterSpec|characterSpec|valid subfieldSpec with characterSpec|...$a/1{/0} => ...$a/1{...$a/0}|
+
 
 ### SubSpec validation
 
