@@ -299,19 +299,19 @@ The following tableshows how SubSpec abbreviation MUST be interpreted.
 
 | corresponding spec type | corresponding spec end with | abbreviated spec begins with | interpretation      | example    |
 |:-----------------------:|:---------------------------:|:----------------------------:|:-------------------:|:----------:|
-|fieldSpec|index|index|valid FieldSpec with index|...[2]{[1]} => ...[2]{...[1]}|
-|fieldSpec|index|characterSpec|valid fieldSpec with index and characterSpec|...[1]{/0-3} => ...[1]{...[1]/0-3}|
-|fieldSpec|index|indicators|valid fieldSpec with index and indicators|...[1]{_01} => ...[1]{...[1]_01}|
-|fieldSpec|characterSpec|index|valid fieldSpec with index|.../0-7{[0]} => .../0-7{005[0]}|
-|fieldSpec|characterSpec|characterSpec|valid fieldSpec with characterSpec|.../0-7{/0=\2} => .../0-7{.../0}|
-|fieldSpec|characterSpec|indicators|__invalid__ fieldspec since characterSpec denotes a fixedField, which can't be used with indicators|.../0-7{_1} => .../0-7{.../0-7_1}|
-|fieldSpec|indicators|index|valid fieldSpec with index|...[1]_1{[0]} => ...[1]_1{...[0]}<br/>..._1{[1]} => ..._1{...[1]}<br/>...[1]_1{[0]_0} => ...[1]_1{...[1]_1}|
-|fieldSpec|indicators|characterSpec|__invalid__ fieldspec since indicators denotes a variableField, which can't be used with characterSpec|245_00{/0-2} => 245_00{245_00/0-2}|
-|fieldSpec|indicators|indicators|valid fieldSpec with indicators|..._1{_01} => ..._1{..._01}|
-|subfieldSpec|index|index|valid subfieldSpec with index|...$a[0]{[1]} => ...$a[0]{...$a[1]}|
-|subfieldSpec|index|characterSpec|valid subfieldSpec with index and characterSpec|...$a[0]{/0} => ...$a[0]{...$a[0]/0}|
-|subfieldSpec|characterSpec|index|valid subfieldSpec with index|...$a/1{[1]} => ...$a/1{...$a[1]}<br/>...$a/1{[1]/1} => ...$a/1{...$a[1]/1}|
-|subfieldSpec|characterSpec|characterSpec|valid subfieldSpec with characterSpec|...$a/1{/0} => ...$a/1{...$a/0}|
+|fieldSpec|index|index|valid FieldSpec with index|```...[2]{[1]} => ...[2]{...[1]}```|
+|fieldSpec|index|characterSpec|valid fieldSpec with index and characterSpec|```...[1]{/0-3} => ...[1]{...[1]/0-3}```|
+|fieldSpec|index|indicators|valid fieldSpec with index and indicators|```...[1]{_01} => ...[1]{...[1]_01}```|
+|fieldSpec|characterSpec|index|valid fieldSpec with index|```.../0-7{[0]} => .../0-7{005[0]}```|
+|fieldSpec|characterSpec|characterSpec|valid fieldSpec with characterSpec|```.../0-7{/0=\2} => .../0-7{.../0}```|
+|fieldSpec|characterSpec|indicators|__invalid__ fieldspec since characterSpec denotes a fixedField, which can't be used with indicators|```.../0-7{_1} => .../0-7{.../0-7_1}```|
+|fieldSpec|indicators|index|valid fieldSpec with index|```...[1]_1{[0]} => ...[1]_1{...[0]}```<br/>```..._1{[1]} => ..._1{...[1]}```<br/>```...[1]_1{[0]_0} => ...[1]_1{...[1]_1}```|
+|fieldSpec|indicators|characterSpec|__invalid__ fieldspec since indicators denotes a variableField, which can't be used with characterSpec|```245_00{/0-2} => 245_00{245_00/0-2}```|
+|fieldSpec|indicators|indicators|valid fieldSpec with indicators|```..._1{_01} => ..._1{..._01}```|
+|subfieldSpec|index|index|valid subfieldSpec with index|```...$a[0]{[1]} => ...$a[0]{...$a[1]}```|
+|subfieldSpec|index|characterSpec|valid subfieldSpec with index and characterSpec|```...$a[0]{/0} => ...$a[0]{...$a[0]/0}```|
+|subfieldSpec|characterSpec|index|valid subfieldSpec with index|```...$a/1{[1]} => ...$a/1{...$a[1]}```<br/>```...$a/1{[1]/1} => ...$a/1{...$a[1]/1}```|
+|subfieldSpec|characterSpec|characterSpec|valid subfieldSpec with characterSpec|```...$a/1{/0} => ...$a/1{...$a/0}```|
 
 
 ### SubSpec validation
