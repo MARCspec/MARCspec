@@ -573,7 +573,7 @@ Reference to the value of the subfield "a" within the context of *indicator 2* w
 Reference to value of the subfield "a" of the first three repetitions of field "307"  within the context of *indicator 1* with the value "8". This will NOT reference the first three 307 fields that are in the context of indicator 1.
 
 ```
-307_8[0-3]$a
+307[0-3]_8$a
 ```
 
 ## Reference to contextualized data with subSpecs examples
