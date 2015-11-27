@@ -1,7 +1,8 @@
-NAME=marc-spec
-GITHUB=https://github.com/MARCspec/MARCspec/
-AUTHOR=Carsten Klee (ZDB)
-HTML_CSS=code-box.css
-TITLE=MARCspec - A common MARC record path language
-
-include ../makespec/Makefile
+NAME = marc-spec
+GITHUB = https://github.com/MARCspec/MARCspec/
+AUTHOR = Carsten Klee (ZDB)
+TITLE = MARCspec - A common MARC record path language
+HTML_ARGS += --css code-box.css
+SOURCE = marc-spec.md
+HTML_TEMPLATE = template.html
+include makespec/Makefile
