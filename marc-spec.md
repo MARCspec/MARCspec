@@ -89,14 +89,14 @@ The whole ABNF for MARCspec shows as follows
     subTerm           = fieldSpec / subfieldSpec / comparisonString / abbreviation
     subTermSet        = [ [subTerm] operator ] subTerm
     subSpec           = "{" subTermSet *( "|" subTermSet ) "}"
-    MARCspec          = (variableField *subSpec *(subfieldSpec *subSpec)) / fixedField *subSpec
+    MARCspec          = (variableField *subSpec 1*(subfieldSpec *subSpec)) / fixedField *subSpec
 
 ### General form
 
-Every __MARCspec__ consists of a *fixed field* spec or *variable field* spec. *Variable fields* followed optionally by one or more *subfieldSpecs*. Both *fieldSpec* and *subfieldSpec* can be contextualized through *subSpecs* (see section [SubSpecs]).
+Every __MARCspec__ consists of a *fixed field* spec or *variable field* spec. *Variable fields* followed by one or more *subfieldSpecs*. Both *fieldSpec* and *subfieldSpec* can be contextualized through *subSpecs* (see section [SubSpecs]).
 
     fieldSpec = fixedField / variableField
-    MARCspec  = (variableField *subSpec *(subfieldSpec *subSpec)) / fixedField *subSpec
+    MARCspec  = (variableField *subSpec 1*(subfieldSpec *subSpec)) / fixedField *subSpec
 
 ### Reference to field data
 
@@ -407,7 +407,7 @@ It is possible to __abbreviate__ a contextualized *fieldSpec* by only using
 
     abrFieldSpec = index [ (characterSpec / indicators) ] / characterSpec / indicators
 
-as a *subTerm* (see [SubSpec abbreviation] and [Abbreviation of fieldSpec or subfieldSpec] for examples).
+as a *subTerm* (see [SubSpec abbreviation] for examples).
 
 It is possible to __abbreviate__ a contextualized *subfieldSpec* by only using
 
@@ -417,7 +417,7 @@ It is possible to __abbreviate__ a contextualized *subfieldSpec* by only using
 
     abrSubfieldSpec  = index [characterSpec] / characterSpec
 
-as a *subTerm* (see [SubSpec abbreviation] and [Abbreviation of fieldSpec or subfieldSpec] for examples).
+as a *subTerm* (see [SubSpec abbreviation] for examples).
 
 By omitting the *left hand subTerm*, this implicitly makes the preceding spec outside the subfieldSpec the *left hand subTerm* (see [MARCspec interpretation] for implicit rules). For *subSpecs* with omitted *left hand subTerm* the *operator* can also be omitted. Omitting the *operator* this implies the use of the *operator* ```?``` (exists).
 
