@@ -6,7 +6,7 @@ There are already several tools that each use their own and therefore different 
 
 # Status of this document
 
-The current version of this proposal is a preliminary draft for open discussion. [Feedback](https://github.com/cklee/marc-spec/issues) is welcome!
+The current version of this specification has a beta status. It is already implemented in various tools for different programming languages. All implementers and interested partys are welcome to give [Feedback](https://github.com/cklee/marc-spec/issues)!
 
 # Terminology
 
