@@ -4,6 +4,14 @@ Since it became a common task to map [MARC] data to arbitrary formats, these map
 
 There are already several tools that each use their own and therefore different *MARC field specification*. The hereby described specification **MARCspec** is an approach to normalizing such field specifications in terms of unification and interchangeability.
 
+# Changes
+
+<div class="versions">
+<div class="latest">Latest version: <a href="{CURRENT_VERSION}.html">{CURRENT_VERSION}</a></div>
+Commit history:
+{GIT_CHANGES}
+</div>
+
 # Status of this document
 
 The current version of this specification has a beta status. It is already implemented in various tools for different programming languages. All implementers and interested partys are welcome to give [Feedback](https://github.com/cklee/marc-spec/issues)!
@@ -364,7 +372,7 @@ Reference to value(s) of *indicator 1* of all occurrences of field '880'.
 <div class="example">
 Reference to value of *indicator 2* of first repetition of field '880'.
 
-    880[1]^1
+    880[1]^2
 
 </div>
 
@@ -667,24 +675,22 @@ Because of the limited expressivity of the MARCspec, there must be some kind of 
 
 The following table shows how SubSpec abbreviation MUST be interpreted.
 
-| corresponding spec type | corresponding spec end with | abbreviated spec begins with |                                             interpretation                          |                                                             example                                                             |
-| :---------------------: | :-------------------------: | :--------------------------: | :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: |
-|        fieldSpec        |            index            |            index             |                                       valid fieldSpec with index                                        |                                                `...[2]{[1]}` => `...[2]{...[1]}`                                                |
-|        fieldSpec        |            index            |        characterSpec         |                              valid fieldSpec with index and characterSpec                               |                                             `...[1]{/0-3}` => `...[1]{...[1]/0-3}`                                              |
-|        fieldSpec        |            index            |        indicatorSpec         |                                     valid indicatorSpec with index                                      |                                               `...[1]{^1}` => `...[1]{...[1]^1}`                                                |
-|        fieldSpec        |        characterSpec        |            index             |                                       valid fieldSpec with index                                        |                                               `.../0-7{[0]}` => `.../0-7{005[0]}`                                               |
-|        fieldSpec        |        characterSpec        |        characterSpec         |                                   valid fieldSpec with characterSpec                                    |                                              `.../0-7{/0=\2}` => `.../0-7{.../0}`                                               |
+| corresponding spec type | corresponding spec end with | abbreviated spec begins with |                                                interpretation                                                |                                                             example                                                             |
+| :---------------------: | :-------------------------: | :--------------------------: | :----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------: |
+|        fieldSpec        |            index            |            index             |                                          valid fieldSpec with index                                          |                                                `...[2]{[1]}` => `...[2]{...[1]}`                                                |
+|        fieldSpec        |            index            |        characterSpec         |                                 valid fieldSpec with index and characterSpec                                 |                                             `...[1]{/0-3}` => `...[1]{...[1]/0-3}`                                              |
+|        fieldSpec        |            index            |        indicatorSpec         |                                        valid indicatorSpec with index                                        |                                               `...[1]{^1}` => `...[1]{...[1]^1}`                                                |
+|        fieldSpec        |        characterSpec        |            index             |                                          valid fieldSpec with index                                          |                                               `.../0-7{[0]}` => `.../0-7{005[0]}`                                               |
+|        fieldSpec        |        characterSpec        |        characterSpec         |                                      valid fieldSpec with characterSpec                                      |                                              `.../0-7{/0=\2}` => `.../0-7{.../0}`                                               |
 |        fieldSpec        |        characterSpec        |        indicatorSpec         | **invalid** indicatorSpec since characterSpec denotes a fixedField,<br/> which can't be used with indicators |                                                    `.../0-7{^1}` => invalid                                                     |
-|      subfieldSpec       |            index            |            index             |                                      valid subfieldSpec with index                                      |                                             `...$a[0]{[1]}` => `...$a[0]{...$a[1]}`                                             |
-|      subfieldSpec       |            index            |        characterSpec         |                             valid subfieldSpec with index and characterSpec                             |                                            `...$a[0]{/0}` => `...$a[0]{...$a[0]/0}`                                             |
-|      subfieldSpec       |        characterSpec        |            index             |                                      valid subfieldSpec with index                                      |                    `...$a/1{[1]}` => `...$a/1{...$a[1]}`<br/><br/>`...$a/1{[1]/1}` => `...$a/1{...$a[1]/1}`                     |
-|      subfieldSpec       |        characterSpec        |        characterSpec         |                                  valid subfieldSpec with characterSpec                                  |                                               `...$a/1{/0}` => `...$a/1{...$a/0}`                                               |
-|      indicatorSpec      |              1              |              1               |                                   valid indicatorSpec for indicator 1                                   |                                              `...^1{^1!=\_}` => `...^1{...^1!=\_}`                                              |
-|      indicatorSpec      |              1              |              2               |                                   valid indicatorSpec for indicator 1                                   |                                              `...^1{^2!=\_}` => `...^1{...^2!=\_}`                                              |
-|      indicatorSpec      |              2              |              1               |                                   valid indicatorSpec for indicator 2                                   |                                              `...^2{^1!=\_}` => `...^2{...^1!=\_}`                                              |
-|      indicatorSpec      |              2              |              2               |                                   valid indicatorSpec for indicator 2                                   |                                              `...^2{^2!=\_}` => `...^2{...^2!=\_}`                                              |
-|      indicatorSpec      |           1 or 2            |            index             |                        valid fieldSpec, subfieldSpec or indicatorSpec with index                        | `...^2{[1]}` => `...^2{...[1]}`<br/><br/>`...^2{[1]$a}` => `...^2{...[1]$a}`<br/><br/>`...^2{[1]^1=\_}` => `...^2{...[1]^1=\_}` |
-|      indicatorSpec      |           1 or 2            |        characterSpec         |             **invalid** indicatorSpec; characterSpec is not applicable to indicator values              |                                                    `...^2{/0=\1}` => invalid                                                    |
+|      subfieldSpec       |            index            |            index             |                                        valid subfieldSpec with index                                         |                                             `...$a[0]{[1]}` => `...$a[0]{...$a[1]}`                                             |
+|      subfieldSpec       |            index            |        characterSpec         |                               valid subfieldSpec with index and characterSpec                                |                                            `...$a[0]{/0}` => `...$a[0]{...$a[0]/0}`                                             |
+|      subfieldSpec       |        characterSpec        |            index             |                                        valid subfieldSpec with index                                         |                    `...$a/1{[1]}` => `...$a/1{...$a[1]}`<br/><br/>`...$a/1{[1]/1}` => `...$a/1{...$a[1]/1}`                     |
+|      subfieldSpec       |        characterSpec        |        characterSpec         |                                    valid subfieldSpec with characterSpec                                     |                                               `...$a/1{/0}` => `...$a/1{...$a/0}`                                               |
+|      subfieldSpec       |        subfieldCode         |      indicator position      |                                             valid indicatorSpec                                              |                                               `...$a{^2=\0}` => `...$a{...^2=\0}`                                               |
+|      indicatorSpec      |     indicator position      |      indicator position      |                                             valid indicatorSpec                                              |                      `...^1{^1!=\_}` => `...^1{...^1!=\_}`<br/><br/>`...^2{^1!=\_}` => `...^2{...^1!=\_}`                       |
+|      indicatorSpec      |     indicator position      |            index             |                          valid fieldSpec, subfieldSpec or indicatorSpec with index                           | `...^2{[1]}` => `...^2{...[1]}`<br/><br/>`...^2{[1]$a}` => `...^2{...[1]$a}`<br/><br/>`...^2{[1]^1=\_}` => `...^2{...[1]^1=\_}` |
+|      indicatorSpec      |     indicator position      |        characterSpec         |                **invalid** indicatorSpec; characterSpec is not applicable to indicator values                |                                                    `...^2{/0=\1}` => invalid                                                    |
 
 ## SubSpec validation
 

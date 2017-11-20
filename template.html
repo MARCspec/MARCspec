@@ -84,14 +84,6 @@ $endfor$
 $if(date)$
 <h4 class="date">$date$$if(VERSION)$ (version $VERSION$)$endif$</h4>
 $endif$
-<div class="versions">
-$if(CURRENT_VERSION)$
-<div class="this">This version: <a href="$CURRENT_VERSION$.html">$CURRENT_VERSION$</a></div>
-$endif$
-$if(NAME)$
-<div class="latest">Latest version: <a href="$NAME$.html">$NAME$</a></div>
-$endif$
-</div>
 $if(html5)$
 </header>
 $else$
