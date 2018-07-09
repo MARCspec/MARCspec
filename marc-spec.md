@@ -416,7 +416,7 @@ Checking existence of fields
 
 Reference data content of subfield 'c' of field '020', if subfield 'a' of field '020' exists.
 
-    020$s{?020$a}
+    020$c{?020$a}
 
 same as
 
